@@ -15,5 +15,5 @@ Rust was chosen as the server language due to it's processing speed and memory s
 
 ## Client
 
-The client application is an Angular front-end. 
+The client application is an Angular front-end.
 This was chosen due to familiarity with the Angular framework and community.

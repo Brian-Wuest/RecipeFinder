@@ -6,7 +6,7 @@
       "command": "cargo build",
       "type": "shell",
       "options": {
-        "cwd": "${workspaceRoot}/client"
+        "cwd": "${workspaceRoot}/server"
       },
       "presentation": {
         "echo": true,

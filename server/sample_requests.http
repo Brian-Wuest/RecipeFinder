@@ -8,8 +8,8 @@ POST http://127.0.0.1:8080/api/users/_register HTTP/1.1
 content-type: application/json
 
 {
-  "name": "bwuest1",
-  "email": "brian.wuest1@outlook.com",
+  "name": "some_one",
+  "email": "some.one@outlook.com",
   "password": "password1"
 }
 
@@ -21,7 +21,7 @@ POST http://127.0.0.1:8080/api/users/_login HTTP/1.1
 content-type: application/json
 
 {
-  "name": "bwuest",
+  "name": "some_one",
   "password": "password1"
 }
 

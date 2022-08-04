@@ -2,7 +2,7 @@ use crate::models::config::{DatabaseInfo, WebInfo};
 use config::Config;
 use serde::Deserialize;
 
-const CONFIG_FILE_PATH: &str = "C:\\Users\\Brian\\Documents\\GitHub\\Rust_Examples\\simple-auth-server\\default.json";
+const CONFIG_FILE_PATH: &str = ".\\default.json";
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct AppConfig {

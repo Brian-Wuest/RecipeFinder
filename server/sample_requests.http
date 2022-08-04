@@ -1,0 +1,61 @@
+// Note: This file only works if you have the "REST Client" extension in Visual Studio Code.
+// Each request most be separated by ###
+// A blank line must be between any headers and the body of the request
+
+###
+// This is the registration request.
+POST http://127.0.0.1:8080/api/users/_register HTTP/1.1
+content-type: application/json
+
+{
+  "name": "bwuest1",
+  "email": "brian.wuest1@outlook.com",
+  "password": "password1"
+}
+
+###
+// Log the user into the system.
+// The user name and password will be verified.
+// If this cannot be verified the response will be "bad-request".
+POST http://127.0.0.1:8080/api/users/_login HTTP/1.1
+content-type: application/json
+
+{
+  "name": "bwuest",
+  "password": "password1"
+}
+
+###
+// Change the password of the current user
+PUT http://127.0.0.1:8080/api/users/_change_pwd HTTP/1.1
+content-type: application/json
+
+{
+  "oldPassword": "password1",
+  "newPassword": "password2"
+}
+
+###
+// Get a list of all of the users.
+GET http://127.0.0.1:8080/api/users HTTP/1.1
+content-type: application/json
+
+###
+// Hit the index of the api (this is in the users controller because this is an example application.)
+GET http://127.0.0.1:8080/api HTTP/1.1
+content-type: application/json
+
+###
+// Log the user out of the system. This will remove the cookie from the session.
+POST http://127.0.0.1:8080/api/users/_logout HTTP/1.1
+content-type: application/json
+
+###
+// Get a list of all recipe categories.
+GET http://127.0.0.1:8080/api/category HTTP/1.1
+content-type: application/json
+
+###
+// Get a list of all shared recipes.
+GET http://127.0.0.1:8080/api/recipe HTTP/1.1
+content-type: application/json

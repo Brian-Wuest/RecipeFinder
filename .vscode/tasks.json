@@ -1,0 +1,74 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-app",
+      "command": "cargo build",
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceRoot}/client"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "type": "npm",
+      "script": "start",
+      "isBackground": true,
+      "options": {
+        "cwd": "${workspaceRoot}/client"
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      }
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "options": {
+        "cwd": "${workspaceRoot}/server"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "bundle generation complete"
+          }
+        }
+      }
+    },
+    {
+      "label": "end_serve",
+      "type": "shell",
+      "command": ["FOR /F \"tokens=1,2,3,4,5\" %A IN ('\"netstat -ano | findstr :4200 | findstr LISTENING\"') DO (TaskKill /PID %E /F)"],
+      "options": {
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      }
+    }
+  ]
+}

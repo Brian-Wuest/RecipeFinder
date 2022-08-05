@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 
 @Component({
@@ -11,7 +12,7 @@ export class NavigationComponent implements OnInit {
   userItems: Array<MenuItem>;
   loggedIn: boolean = false;
 
-  constructor() {
+  constructor(private router: Router) {
     this.items = [
       {
         label: 'Home',
@@ -40,8 +41,12 @@ export class NavigationComponent implements OnInit {
   ngOnInit(): void {}
 
   logOut() {
+    // TODO: Send request to the server to log the user out to remove the login cookie from the browser.
     this.loggedIn = false;
 
-    // TODO: Make sure to route back to home (recipe main page) if currently on the user page.
+    if (this.router.url === '/user') {
+      // The user logged out and was looking at user details, re-direct back to the root.
+      this.router.navigate(['']);
+    }
   }
 }

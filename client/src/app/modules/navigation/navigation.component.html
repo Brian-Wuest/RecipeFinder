@@ -1,0 +1,5 @@
+<p-menubar [model]="items">
+  <p-button *ngIf="!loggedIn" label="Login" (onClick)="loggedIn = true"></p-button>
+  <p-button *ngIf="loggedIn" icon="pi pi-user" label="Show" (onClick)="menu.toggle($event)"></p-button>
+  <p-menu #menu [popup]="true" [model]="userItems"></p-menu>
+</p-menubar>

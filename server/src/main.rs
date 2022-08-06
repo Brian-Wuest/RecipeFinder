@@ -3,13 +3,18 @@ extern crate lazy_static;
 use crate::api::RecipeController;
 use crate::models::config::AppConfig;
 use crate::{api::CategoryController, api::UsersController, data::common::DataContext};
-use actix_identity::config::LogoutBehaviour;
+use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
-use actix_web::cookie::Key;
+use actix_web::cookie::{Key, SameSite};
+use actix_web::http::header;
 use actix_web::middleware::{Compress, Logger};
 use actix_web::{App, HttpServer};
 use futures::executor;
+use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls_pemfile::{certs, pkcs8_private_keys};
+use std::fs::File;
+use std::io::BufReader;
 use std::sync::Mutex;
 
 // Create modules
@@ -90,6 +95,8 @@ async fn main() -> std::io::Result<()> {
 
 	log::info!("Starting http server: {}", &host_address);
 
+	let config = load_rustls_config();
+
 	// Create the Web Host.
 	HttpServer::new(move || {
 		App::new()
@@ -97,22 +104,32 @@ async fn main() -> std::io::Result<()> {
 			.wrap(Logger::default())
 			.wrap(
 				IdentityMiddleware::builder()
-					.logout_behaviour(LogoutBehaviour::PurgeSession)
 					// Since we are using cookie sessions there isn't a way to manually expire this without custom middleware.
 					//.visit_deadline(Some(std::time::Duration::from_secs(86400)))
 					.build(),
 			)
 			.wrap(
 				SessionMiddleware::builder(CookieSessionStore::default(), cookie_key.clone())
-					// In production make sure this option is turned off.
-					.cookie_secure(false)
+					.cookie_same_site(SameSite::None)
 					.build(),
+			)
+			.wrap(
+				Cors::default()
+					// TODO: Add "allowed clients" to web configuration
+					// TODO: Add allowed methods to web configuration
+					// TODO: Add allowed request ehaders to web configuration
+					.allowed_origin("http://localhost:4200")
+					.supports_credentials()
+					.allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+					.allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+					.allowed_header(header::CONTENT_TYPE)
+					.max_age(3600),
 			)
 			.configure(UsersController::config)
 			.configure(CategoryController::config)
 			.configure(RecipeController::config)
 	})
-	.bind(host_address)?
+	.bind_rustls(host_address, config)?
 	.run()
 	.await
 }
@@ -124,4 +141,26 @@ fn load_config() -> AppConfig {
 fn load_data_context() -> Mutex<DataContext> {
 	let data_info = APP_DATA.database_info.clone();
 	Mutex::new(executor::block_on(data_info.create_pool()))
+}
+
+/// Example provided by: https://github.com/actix/examples/tree/master/https-tls/rustls
+fn load_rustls_config() -> rustls::ServerConfig {
+	// init server config builder with safe defaults
+	let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
+
+	// load TLS key/cert files
+	let cert_file = &mut BufReader::new(File::open("cert.pem").unwrap());
+	let key_file = &mut BufReader::new(File::open("key.pem").unwrap());
+
+	// convert files to key/cert objects
+	let cert_chain = certs(cert_file).unwrap().into_iter().map(Certificate).collect();
+	let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_file).unwrap().into_iter().map(PrivateKey).collect();
+
+	// exit if no keys could be parsed
+	if keys.is_empty() {
+		eprintln!("Could not locate PKCS 8 private keys.");
+		std::process::exit(1);
+	}
+
+	config.with_single_cert(cert_chain, keys.remove(0)).unwrap()
 }

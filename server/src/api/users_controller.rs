@@ -5,6 +5,8 @@ use crate::models::{data::users::User, request::users::RegisterUserRequest};
 use crate::util::auth_services;
 use crate::DATA_CONTEXT;
 use actix_identity::Identity;
+use actix_web::cookie::Cookie;
+use actix_web::cookie::SameSite;
 use actix_web::error::ErrorBadRequest;
 use actix_web::{
 	web::{self, Json},
@@ -180,21 +182,19 @@ impl UsersController {
 	}
 
 	// In order to log out the user needs to be logged in (having the cookie).
-	async fn logout(user: Identity) -> Result<String> {
-		let user_id = user.id().unwrap().clone();
+	async fn logout(user: Identity) -> impl Responder {
 		user.logout();
 
-		let logout_msg = format!("User With ID: {} logged out successfully!", user_id);
-
-		Ok(logout_msg)
+		// Re-set the cookie to blank here since the user logout function doesn't set the same-site option and therefore doesn't work with this application.
+		HttpResponse::Ok()
+			.cookie(Cookie::build("id", "").path("/").secure(true).same_site(SameSite::None).finish())
+			.finish()
 	}
 
 	// To make protected routes, add the "user: Identity" parameter to the function.
 	// This will force the route to have an authenticated user.
 	// If the Identity is "None", the client will get a 401 (Unauthorized) response.
 	async fn get_users(_user: Identity, _request: HttpRequest) -> Result<Json<Vec<GetUsersResponse>>> {
-		println!("Doing a thing");
-
 		let mut result = Vec::new();
 
 		match DATA_CONTEXT.lock() {

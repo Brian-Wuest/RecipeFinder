@@ -5,16 +5,28 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(Windows) Launch",
+      "name": "Debug Windows Launch",
       "type": "cppvsdbg",
       "request": "launch",
-      "program": "${workspaceRoot}/target/debug/simple-auth-server.exe",
+      "program": "${workspaceRoot}/target/debug/recipe-finder-server.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
       "environment": [],
       "console": "internalConsole",
       "preLaunchTask": "build-app"
+    },
+    {
+      "name": "Release Windows Launch",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/target/release/recipe-finder-server.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}",
+      "environment": [],
+      "console": "internalConsole",
+      "preLaunchTask": "build-release-app"
     }
   ]
 }

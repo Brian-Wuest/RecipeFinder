@@ -63,6 +63,10 @@ export class NavigationComponent implements OnInit {
       password: this.loginFormGroup.get(this.passwordKey)?.value,
     } as ILoginRequest;
 
+    // Make sure to clear out the controls ASAP.
+    this.loginFormGroup.get(this.loginNameKey)?.setValue('');
+    this.loginFormGroup.get(this.passwordKey)?.setValue('');
+
     this.userDataService.login(request).subscribe(() => {
       this.loggedIn = true;
 

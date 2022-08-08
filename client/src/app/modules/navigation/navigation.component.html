@@ -1,5 +1,27 @@
 <p-menubar [model]="items">
-  <p-button *ngIf="!loggedIn" label="Login" (onClick)="login()"></p-button>
+  <p-button *ngIf="!loggedIn" label="Login" (onClick)="op.toggle($event)"></p-button>
   <p-button *ngIf="loggedIn" icon="pi pi-user" label="Show" (onClick)="menu.toggle($event)"></p-button>
   <p-menu #menu [popup]="true" [model]="userItems"></p-menu>
 </p-menubar>
+
+<p-overlayPanel #op id="op">
+  <ng-template pTemplate>
+    <form [formGroup]="loginFormGroup">
+      <div class="formgrid">
+        <div class="field">
+          <label for="loginName">User Name or Email</label>
+          <input id="loginName" name="loginName" type="text" [formControlName]="loginNameKey" pInputText class="w-full" autofocus />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" (keyup.enter)="login()" [formControlName]="passwordKey" pInputText class="w-full" />
+        </div>
+
+        <div class="">
+          <p-button label="Login" (onClick)="login()"></p-button>
+        </div>
+      </div>
+    </form>
+  </ng-template>
+</p-overlayPanel>

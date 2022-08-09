@@ -1,5 +1,6 @@
 use crate::models::request::users::ChangePasswordRequest;
 use crate::models::request::users::LoginRequest;
+use crate::models::response::GetCurrentUserResponse;
 use crate::models::response::GetUsersResponse;
 use crate::models::{data::users::User, request::users::RegisterUserRequest};
 use crate::util::auth_services;
@@ -21,7 +22,7 @@ impl UsersController {
 	pub fn config(cfg: &mut web::ServiceConfig) {
 		// It's not obvious in the current implementation but you can specify multiple HTTP methods for a specific resource.
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
-		cfg.service(web::resource("/api").route(web::get().to(UsersController::index)));
+		cfg.service(web::resource("/api/users/me").route(web::get().to(UsersController::index)));
 		cfg.service(web::resource("/api/users").route(web::get().to(UsersController::get_users)));
 		cfg.service(web::resource("/api/users/_register").route(web::post().to(UsersController::register)));
 		cfg.service(web::resource("/api/users/_login").route(web::post().to(UsersController::login)));
@@ -31,16 +32,15 @@ impl UsersController {
 
 	// By using the "Option<Identity>" property we can have special functionality based
 	// On whether or not the user is logged in or not.
-	async fn index(user: Option<Identity>, _req: HttpRequest) -> Result<String> {
-		if let Some(user) = user {
-			// This is an example of how to get some meta data out of the current session cookie
-			//let user_code: String = session.get("code").unwrap().unwrap();
+	async fn index(user: Option<Identity>, _req: HttpRequest) -> Result<Json<GetCurrentUserResponse>> {
+		let mut response = GetCurrentUserResponse::default();
 
-			let welcome_msg = format!("Welcome! {}", user.id().unwrap());
-			Ok(welcome_msg)
-		} else {
-			Ok("Welcome Anonymous!".to_owned())
+		if let Some(user) = user {
+			let id = Uuid::parse_str(&user.id().unwrap()).unwrap();
+			response.id = Some(id);
 		}
+
+		Ok(web::Json(response))
 	}
 
 	async fn register(form: Json<RegisterUserRequest>, request: HttpRequest) -> Result<String> {

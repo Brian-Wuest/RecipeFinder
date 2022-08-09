@@ -13,6 +13,10 @@ export class RouteConfigService {
     return this.baseAPIPath + '/users';
   }
 
+  public get me(): string {
+    return this.baseUserPath + '/me';
+  }
+
   public get registerUser(): string {
     return this.baseUserPath + '/_register';
   }

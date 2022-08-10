@@ -1,7 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { OverlayPanel } from 'primeng/overlaypanel';
+import { Subscription } from 'rxjs';
 import { ILoginRequest } from 'src/app/models/requests/login-request';
 import { UserDataService } from 'src/app/services/data/user-data.service';
 import { UserService } from 'src/app/services/user.service';
@@ -11,12 +12,14 @@ import { UserService } from 'src/app/services/user.service';
   templateUrl: './navigation.component.html',
   styleUrls: ['./navigation.component.scss'],
 })
-export class NavigationComponent implements OnInit {
+export class NavigationComponent implements OnInit, OnDestroy {
   items: Array<MenuItem>;
   userItems: Array<MenuItem>;
   loginFormGroup: FormGroup;
   loginNameKey = 'loginName';
   passwordKey = 'password';
+  userName: string;
+  private userNameChangedSubscription: Subscription
 
   @ViewChild('op')
   loginPanel: OverlayPanel | undefined;
@@ -52,7 +55,17 @@ export class NavigationComponent implements OnInit {
     ];
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.userNameChangedSubscription = this.userService.userNameUpdated.subscribe(value => {
+      this.userName = value;
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.userNameChangedSubscription) {
+      this.userNameChangedSubscription.unsubscribe();
+    }
+  }
 
   login() {
     const request = {
@@ -64,10 +77,8 @@ export class NavigationComponent implements OnInit {
     this.loginFormGroup.get(this.loginNameKey)?.setValue('');
     this.loginFormGroup.get(this.passwordKey)?.setValue('');
 
-    this.userDataService.login(request).subscribe(() => {
-      this.userService.loggedIn = true;
+    this.userService.login(request);
 
-      this.loginPanel?.hide();
-    });
+    this.loginPanel?.hide();
   }
 }

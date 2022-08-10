@@ -9,6 +9,7 @@ use actix_identity::Identity;
 use actix_web::cookie::Cookie;
 use actix_web::cookie::SameSite;
 use actix_web::error::ErrorBadRequest;
+use actix_web::Either;
 use actix_web::{
 	web::{self, Json},
 	HttpMessage, HttpRequest, HttpResponse, Responder, Result,
@@ -35,9 +36,18 @@ impl UsersController {
 	async fn index(user: Option<Identity>, _req: HttpRequest) -> Result<Json<GetCurrentUserResponse>> {
 		let mut response = GetCurrentUserResponse::default();
 
-		if let Some(user) = user {
-			let id = Uuid::parse_str(&user.id().unwrap()).unwrap();
-			response.id = Some(id);
+		if let Some(identity) = user {
+			let id = Uuid::parse_str(&identity.id().unwrap()).unwrap();
+			let mut context = DATA_CONTEXT.lock().unwrap();
+
+			match User::load_user_by_id(&id, &mut context).await {
+				Some(user) => {
+					response.id = Some(user.id);
+					response.name = Some(user.name);
+					response.email = Some(user.email);
+				}
+				None => {}
+			};
 		}
 
 		Ok(web::Json(response))
@@ -81,8 +91,10 @@ impl UsersController {
 		}
 	}
 
-	async fn login(request: HttpRequest, form: Json<LoginRequest>) -> impl Responder {
+	async fn login(request: HttpRequest, form: Json<LoginRequest>) -> Result<impl Responder> {
+		////Result<Json<GetCurrentUserResponse>> {
 		let mut context = DATA_CONTEXT.lock().unwrap();
+
 		match User::load_user_by_name_or_email(&form.name, &form.name, &mut context).await {
 			Some(user) => {
 				// This is a valid user, now check the password.
@@ -94,11 +106,11 @@ impl UsersController {
 							Ok(verification) => {
 								// Don't do anything on the else because it will fall through to the login below.
 								if !verification {
-									return HttpResponse::BadRequest();
+									return Ok(Either::Right(HttpResponse::BadRequest().finish()));
 								}
 							}
 							Err(_error) => {
-								return HttpResponse::BadRequest();
+								return Ok(Either::Right(HttpResponse::BadRequest().finish()));
 							}
 						}
 					}
@@ -110,10 +122,18 @@ impl UsersController {
 				// Log the user in so they get the session cookie for future requests.
 				// attach a verified user identity to the active session
 				Identity::login(&request.extensions(), user.id.to_string()).unwrap();
+				let mut response = GetCurrentUserResponse::default();
 
-				HttpResponse::Ok()
+				response.id = Some(user.id);
+				response.name = Some(user.name);
+				response.email = Some(user.email);
+
+				// The Either::Left and Either::Right allows us to specify different type of responses based on the processing of the endpoint.
+				// In the "Ok" we can return the user data with the response.
+				// When there is a logic error or a general issue we can return a "BadRequest" response.
+				Ok(Either::Left(web::Json(response)))
 			}
-			None => HttpResponse::BadRequest(),
+			None => Ok(Either::Right(HttpResponse::BadRequest().finish())),
 		}
 
 		// Example of how to add some meta data to the session.

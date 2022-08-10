@@ -20,8 +20,8 @@ export class UserDataService {
     return this.httpClient.get<Array<IGetUserResponse>>(this.routeConfig.baseUserPath, { withCredentials: true });
   }
 
-  public login(request: ILoginRequest): Observable<Object> {
-    return this.httpClient.post(this.routeConfig.loginUser, request, { withCredentials: true });
+  public login(request: ILoginRequest): Observable<IGetMeResponse> {
+    return this.httpClient.post<IGetMeResponse>(this.routeConfig.loginUser, request, { withCredentials: true });
   }
 
   public logout(): Observable<string> {

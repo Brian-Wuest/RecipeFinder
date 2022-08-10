@@ -1,16 +1,20 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { ILoginRequest } from '../models/requests/login-request';
+import { IGetMeResponse } from '../models/responses/get-me';
 import { UserDataService } from './data/user-data.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService {
-  userId: string;
+  currentUser: IGetMeResponse;
   loggedIn: boolean = false;
+  userNameUpdated: EventEmitter<string>;
 
   constructor(private router: Router, private userDataService: UserDataService) {
-    this.userId = '';
+    this.currentUser = null;
+    this.userNameUpdated = new EventEmitter<string>();
   }
 
   /**
@@ -19,9 +23,18 @@ export class UserService {
   determineIfUserIsLoggedIn() {
     this.userDataService.getMe().subscribe(response => {
       if (response && response.id) {
-        this.userId = response.id;
+        this.currentUser = response;
+        this.userNameUpdated.emit(this.currentUser.name);
         this.loggedIn = true;
       }
+    });
+  }
+
+  login(request: ILoginRequest) {
+    this.userDataService.login(request).subscribe(result => {
+      this.currentUser = result;
+      this.userNameUpdated.emit(this.currentUser.name);
+      this.loggedIn = true;
     });
   }
 
@@ -32,6 +45,7 @@ export class UserService {
   logOut() {
     this.userDataService.logout().subscribe(() => {
       this.loggedIn = false;
+      this.userNameUpdated.emit('');
 
       if (this.router.url === '/user') {
         // The user logged out and was looking at user details, re-direct back to the root.

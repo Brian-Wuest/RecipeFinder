@@ -1,5 +1,5 @@
 <p-menubar [model]="items">
-  <p-button (onClick)="settings.toggle($event)" icon="pi pi-desktop" style="margin-right: 8px" styleClass="p-button-secondary"></p-button>
+  <p-button (onClick)="settings.toggle($event)" icon="pi pi-desktop" class="setting-button" styleClass="p-button-secondary"></p-button>
   <p-button *ngIf="!userService.loggedIn" icon="pi pi-sign-in" label="Login" (onClick)="op.toggle($event)"></p-button>
   <p-button *ngIf="userService.loggedIn" icon="pi pi-user" [label]="userName" (onClick)="menu.toggle($event)"></p-button>
   <p-menu #menu [popup]="true" [model]="userItems"></p-menu>
@@ -7,7 +7,7 @@
 
 <p-overlayPanel #settings>
   <ng-template pTemplate>
-    <label for="theme-switcher" style="display: block; margin-bottom: 8px;">Lights</label>
+    <label for="theme-switcher" class="theme-label">Lights</label>
     <p-inputSwitch id="theme-switcher" name="theme-switcher" (onChange)="darkToggleChanged()" [(ngModel)]="isLightTheme" class="w-full"></p-inputSwitch>
   </ng-template>
 </p-overlayPanel>

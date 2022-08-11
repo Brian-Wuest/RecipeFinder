@@ -9,6 +9,7 @@ import { MenubarModule } from 'primeng/menubar';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { NavigationComponent } from './navigation.component';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 @NgModule({
   declarations: [NavigationComponent],
@@ -24,6 +25,7 @@ import { NavigationComponent } from './navigation.component';
     InputTextModule,
     ReactiveFormsModule,
     FormsModule,
+    InputSwitchModule,
   ],
 })
 export class NavigationModule {}

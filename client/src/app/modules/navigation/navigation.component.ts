@@ -19,12 +19,15 @@ export class NavigationComponent implements OnInit, OnDestroy {
   loginNameKey = 'loginName';
   passwordKey = 'password';
   userName: string;
-  private userNameChangedSubscription: Subscription
+  isLightTheme: boolean;
+  private userNameChangedSubscription: Subscription;
 
   @ViewChild('op')
   loginPanel: OverlayPanel | undefined;
 
   constructor(private userDataService: UserDataService, protected userService: UserService) {
+    this.isLightTheme = true;
+
     this.loginFormGroup = new FormGroup({
       loginName: new FormControl(''),
       password: new FormControl(''),
@@ -81,5 +84,45 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.userService.login(request);
 
     this.loginPanel?.hide();
+  }
+
+  darkToggleChanged() {
+    if (this.isLightTheme) {
+      this.changeLightDarkLayout('layout-css', 'light-layout');
+      this.changeLightDarkTheme('theme-css', 'light-theme');
+    }
+    else {
+      this.changeLightDarkLayout('layout-css', 'dark-layout');
+      this.changeLightDarkTheme('theme-css', 'dark-theme');
+    }
+  }
+
+  changeLightDarkTheme(id: string, value: string) {
+    this.changeLightDarkElement(id, value);
+  }
+
+  changeLightDarkLayout(id: string, value: string) {
+    this.changeLightDarkElement(id, value);
+  }
+
+  changeLightDarkElement(id:string, value: string) {
+    const element = document.getElementById(id);
+    const urlTokens = element.getAttribute('href').split('/');
+    urlTokens[urlTokens.length - 1] = value + '.css';
+    const newURL = urlTokens.join('/');
+    this.replaceLink(element, newURL);
+  }
+
+  replaceLink(linkElement: HTMLElement, href: string) {
+    const id = linkElement.getAttribute('id');
+    const cloneLinkElement = linkElement.cloneNode(true) as HTMLElement;
+    cloneLinkElement.setAttribute('href', href);
+    cloneLinkElement.setAttribute('id', id + '-clone');
+    linkElement.parentNode.insertBefore(cloneLinkElement, linkElement.nextSibling);
+
+    cloneLinkElement.addEventListener('load', () => {
+      linkElement.remove();
+      cloneLinkElement.setAttribute('id', id);
+    });
   }
 }

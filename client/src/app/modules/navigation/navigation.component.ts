@@ -36,10 +36,12 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.items = [
       {
         label: 'Home',
+        icon: "pi pi-home",
         routerLink: 'recipe',
       },
       {
         label: 'Categories',
+        icon: "pi pi-tags",
         routerLink: 'category',
       },
     ];
@@ -48,9 +50,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
       {
         label: 'Account Details',
         routerLink: 'user',
+        icon: "pi pi-id-card"
       },
       {
         label: 'Log Out',
+        icon: "pi pi-sign-out",
         command: () => {
           this.userService.logOut();
         },
@@ -62,6 +66,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.userNameChangedSubscription = this.userService.userNameUpdated.subscribe(value => {
       this.userName = value;
     });
+
+    var isDark = sessionStorage.getItem("isDark")?.toLowerCase() === 'true';
+
+    if (isDark) {
+      this.isLightTheme = false;
+      this.darkToggleChanged();
+    }
   }
 
   ngOnDestroy(): void {
@@ -88,17 +99,16 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   darkToggleChanged() {
     if (this.isLightTheme) {
-      this.changeLightDarkLayout('layout-css', 'light-layout');
       this.changeLightDarkTheme('theme-css', 'light-theme');
     }
     else {
-      this.changeLightDarkLayout('layout-css', 'dark-layout');
       this.changeLightDarkTheme('theme-css', 'dark-theme');
     }
   }
 
   changeLightDarkTheme(id: string, value: string) {
     this.changeLightDarkElement(id, value);
+    sessionStorage.setItem("isDark", (!this.isLightTheme).valueOf().toString());
   }
 
   changeLightDarkLayout(id: string, value: string) {

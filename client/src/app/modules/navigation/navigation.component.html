@@ -1,14 +1,16 @@
 <p-menubar [model]="items">
-  <div style="display: inline-block; padding-right: 12px;">
-    <label for="theme-switcher" *ngIf="isLightTheme" style="display: block; margin-bottom: 5px;">Light</label>
-    <label for="theme-switcher" *ngIf="!isLightTheme" style="display: block; margin-bottom: 5px;">Dark</label>
-    <p-inputSwitch id="theme-switcher" (onChange)="darkToggleChanged()" [(ngModel)]="isLightTheme"></p-inputSwitch>
-  </div>
-  <p-button *ngIf="!userService.loggedIn" label="Login" (onClick)="op.toggle($event)"></p-button>
+  <p-button (onClick)="settings.toggle($event)" icon="pi pi-desktop" style="margin-right: 8px" styleClass="p-button-secondary"></p-button>
+  <p-button *ngIf="!userService.loggedIn" icon="pi pi-sign-in" label="Login" (onClick)="op.toggle($event)"></p-button>
   <p-button *ngIf="userService.loggedIn" icon="pi pi-user" [label]="userName" (onClick)="menu.toggle($event)"></p-button>
   <p-menu #menu [popup]="true" [model]="userItems"></p-menu>
 </p-menubar>
 
+<p-overlayPanel #settings>
+  <ng-template pTemplate>
+    <label for="theme-switcher" style="display: block; margin-bottom: 8px;">Lights</label>
+    <p-inputSwitch id="theme-switcher" name="theme-switcher" (onChange)="darkToggleChanged()" [(ngModel)]="isLightTheme" class="w-full"></p-inputSwitch>
+  </ng-template>
+</p-overlayPanel>
 <p-overlayPanel #op id="op">
   <ng-template pTemplate>
     <form [formGroup]="loginFormGroup">

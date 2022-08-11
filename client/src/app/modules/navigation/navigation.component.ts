@@ -77,6 +77,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.loginFormGroup.get(this.loginNameKey)?.setValue('');
     this.loginFormGroup.get(this.passwordKey)?.setValue('');
 
+    // TODO: Show error messages should the login fail.
     this.userService.login(request);
 
     this.loginPanel?.hide();

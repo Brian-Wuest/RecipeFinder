@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { UserDataService } from 'src/app/services/data/user-data.service';
 
 @Component({
@@ -7,16 +8,14 @@ import { UserDataService } from 'src/app/services/data/user-data.service';
   styleUrls: ['./recipe-search.component.scss']
 })
 export class RecipeSearchComponent implements OnInit {
+  loading = false;
 
-  constructor(private userDataService: UserDataService) { }
+  constructor(private currentRoute: ActivatedRoute) { }
 
   ngOnInit(): void {
-  }
+    // Determines if recipes should only be loaded for the current user.
+    const forCurrentUser = this.currentRoute.snapshot.queryParamMap.get('currentUser')?.toLowerCase() === 'true';
 
-  getUsers() {
-    this.userDataService.getAllUsers().subscribe(result => {
-      console.log("User Result", result);
-    });
+    this.loading = true;
   }
-
 }

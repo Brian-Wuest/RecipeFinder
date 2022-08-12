@@ -1,0 +1,11 @@
+html {
+  body {
+    .side-menu {
+      padding-top: 16px;
+      padding-bottom: 0px;
+      .p-menu {
+        height: calc(100vh - 89px);
+      }
+    }
+  }
+}

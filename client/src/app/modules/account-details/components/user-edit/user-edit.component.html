@@ -1,1 +1,18 @@
-<p>user-edit works!</p>
+<form [formGroup]="groupForm" class="mt-4 mr-4" [name]="formNameKey" [id]="formNameKey">
+  <div class="formgrid">
+    <div class="field">
+      <label for="userName">User Name</label>
+      <input id="userName" name="userName" type="text" [formControlName]="userNameKey" pInputText class="w-full" autofocus required />
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" [formControlName]="emailKey" pInputText class="w-full" required />
+    </div>
+
+    <div class="flex justify-content-end">
+      <p-tag *ngIf="hasChanges" icon="pi pi-exclamation-triangle" value="There are unsaved changes" severity="warning" class="mr-4"></p-tag>
+      <p-button label="Save" [disabled]="!hasChanges || groupForm.invalid ? true : null" (onClick)="saveChanges()" icon="pi pi-save"></p-button>
+    </div>
+  </div>
+</form>

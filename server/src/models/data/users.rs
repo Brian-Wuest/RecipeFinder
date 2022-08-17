@@ -1,5 +1,7 @@
+use std::default;
+
 use serde::Serialize;
-use tiberius::{Row, Uuid};
+use tiberius::{Row, ToSql, Uuid};
 
 use crate::data::common::{DataContext, DataElement, DataTools};
 
@@ -55,6 +57,46 @@ impl User {
 				false
 			}
 		}
+	}
+
+	pub async fn update_name_email(id: &Uuid, new_name: &str, new_email: &str, data_context: &mut DataContext) -> bool {
+		let mut query = "Update dbo.Users SET ".to_owned();
+		let mut updated_both = false;
+		let mut single_value = new_name.clone();
+
+		if new_name != "" {
+			query += "Name = @P1 ";
+
+			if new_email != "" {
+				updated_both = true;
+				query += "EMail = @P2 ";
+			}
+		} else if new_email != "" {
+			query += "EMail = @P1 ";
+			single_value = new_email;
+		}
+
+		if updated_both {
+			query += "WHERE ID = @P3";
+
+			match User::insert_with_params(&query, &[&new_name, &new_email, id], data_context).await {
+				Ok(_) => return true,
+				Err(error) => {
+					log::error!("Error During User Update: {}", error.clone());
+				}
+			};
+		} else {
+			query += "WHERE ID = @P2";
+
+			match User::insert_with_params(&query, &[&single_value, id], data_context).await {
+				Ok(_) => return true,
+				Err(error) => {
+					log::error!("Error During User Update: {}", error.clone());
+				}
+			};
+		}
+
+		false
 	}
 
 	/// Inserts a new user into the database.

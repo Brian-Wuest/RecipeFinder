@@ -1,5 +1,6 @@
 use crate::models::request::users::ChangePasswordRequest;
 use crate::models::request::users::LoginRequest;
+use crate::models::request::users::UpdateDetailsRequest;
 use crate::models::response::GetCurrentUserResponse;
 use crate::models::response::GetUsersResponse;
 use crate::models::{data::users::User, request::users::RegisterUserRequest};
@@ -23,7 +24,11 @@ impl UsersController {
 	pub fn config(cfg: &mut web::ServiceConfig) {
 		// It's not obvious in the current implementation but you can specify multiple HTTP methods for a specific resource.
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
-		cfg.service(web::resource("/api/users/me").route(web::get().to(UsersController::index)));
+		cfg.service(
+			web::resource("/api/users/me")
+				.route(web::get().to(UsersController::index))
+				.route(web::put().to(UsersController::update_details)),
+		);
 		cfg.service(web::resource("/api/users").route(web::get().to(UsersController::get_users)));
 		cfg.service(web::resource("/api/users/_register").route(web::post().to(UsersController::register)));
 		cfg.service(web::resource("/api/users/_login").route(web::post().to(UsersController::login)));
@@ -230,5 +235,36 @@ impl UsersController {
 		}
 
 		Ok(web::Json(result))
+	}
+
+	async fn update_details(identity: Identity, form: Json<UpdateDetailsRequest>) -> Result<String> {
+		let user_id = Uuid::parse_str(&identity.id().unwrap()).unwrap();
+		let mut context = DATA_CONTEXT.lock().unwrap();
+
+		match User::load_user_by_id(&user_id, &mut context).await {
+			Some(user) => {
+				let name = form.name.clone().unwrap_or_default();
+				let email = form.email.clone().unwrap_or_default();
+				let trimmed_name = name.trim();
+				let trimmed_email = email.trim();
+
+				if trimmed_name == "" && trimmed_email == "" {
+					return Err(ErrorBadRequest("Both user name and email are blank"));
+				}
+
+				match User::load_user_by_name_or_email(&name, &email, &mut context).await {
+					Some(_) => return Err(ErrorBadRequest("User registration already exists")),
+					None => {
+						// This user-name and/or email don't exist yet, construct an update statement and update the information.
+						if !User::update_name_email(&user_id, &trimmed_name, &trimmed_email, &mut context).await {
+							return Err(ErrorBadRequest("Unable to update username or email"));
+						}
+					}
+				}
+			}
+			None => {}
+		}
+
+		Ok("User Information Updated Successfully!".to_owned())
 	}
 }

@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(Windows) Launch",
+      "name": "Server Launch",
       "type": "cppvsdbg",
       "request": "launch",
       "program": "${workspaceRoot}/server/target/debug/recipe-finder-server.exe",
@@ -17,7 +17,7 @@
       "preLaunchTask": "build-app"
     },
     {
-      "name": "ng serve",
+      "name": "Client Launch",
       "type": "msedge",
       "cwd": "${workspaceRoot}/client",
       "request": "launch",
@@ -32,6 +32,16 @@
       "request": "launch",
       "preLaunchTask": "npm: test",
       "url": "http://localhost:9876/debug.html"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Client-Server",
+      "configurations": [
+        "Server Launch",
+        "Client Launch"
+      ],
+      "stopAll": true
     }
   ]
 }

@@ -21,6 +21,7 @@
       "type": "npm",
       "script": "start",
       "isBackground": true,
+      "dependsOn": "build-app",
       "options": {
         "cwd": "${workspaceRoot}/client"
       },

@@ -19,7 +19,7 @@ impl GetUsersResponse {
 
 		// Clone and update the resulting user since the password should not be returned except in special cases.
 		for user in data_model.iter() {
-			result.push(GetUsersResponse::new(user.id.clone(), user.name.clone(), user.email.clone()));
+			result.push(GetUsersResponse::new(user.id, user.name.clone(), user.email.clone()));
 		}
 
 		result

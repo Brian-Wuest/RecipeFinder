@@ -1,6 +1,5 @@
 use crate::models::data::SubCategory;
 use crate::models::response::GetCategoryResponse;
-use crate::DATA_CONTEXT;
 use actix_identity::Identity;
 use actix_web::{
 	web::{self, Json},
@@ -17,20 +16,12 @@ impl CategoryController {
 	}
 
 	async fn index(_user: Identity, _req: HttpRequest) -> Result<Json<Vec<GetCategoryResponse>>> {
-		let mut result = Vec::new();
 		log::info!("Loading all categories");
+		let mut result = Vec::new();
+		let data_result = SubCategory::load_all_categories().await;
 
-		match DATA_CONTEXT.lock() {
-			Ok(mut context) => {
-				let data_result = SubCategory::load_all_categories(&mut context).await;
-
-				result = GetCategoryResponse::convert_from_data_model(data_result);
-			}
-			Err(err) => {
-				println!("Error: {}", err);
-				log::error!("Error:, {}", err);
-				panic!("Error: {}", err);
-			}
+		if !data_result.is_empty() {
+			result = GetCategoryResponse::convert_from_data_model(data_result);
 		}
 
 		Ok(web::Json(result))

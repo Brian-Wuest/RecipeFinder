@@ -1,5 +1,5 @@
-use tiberius::time::time::Time;
 use serde::Serialize;
+use tiberius::time::time::Time;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct SimpleTime(pub Time);
@@ -17,8 +17,8 @@ impl SimpleTime {
 
 	/// Determines if the passed in time matches the minimum or maximum time.
 	pub fn is_min_or_max_time(time_to_check: &SimpleTime) -> bool {
-		SimpleTime::do_times_match(&SimpleTime::get_min_time(), &time_to_check)
-			|| SimpleTime::do_times_match(&SimpleTime::get_max_time(), &time_to_check)
+		SimpleTime::do_times_match(&SimpleTime::get_min_time(), time_to_check)
+			|| SimpleTime::do_times_match(&SimpleTime::get_max_time(), time_to_check)
 	}
 
 	/// Determines if two times match on hour, minute, and second.

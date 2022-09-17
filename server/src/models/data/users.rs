@@ -1,7 +1,7 @@
 use serde::Serialize;
 use tiberius::{Row, Uuid};
 
-use crate::data::common::{DataContext, DataElement, DataTools};
+use crate::data::common::{DataElement, DataTools};
 
 #[derive(Debug, Serialize, Clone, Default)]
 pub struct User {
@@ -24,72 +24,72 @@ impl User {
 	}
 
 	/// Loads all users registered in the system.
-	pub async fn load_all_users(data_context: &mut DataContext) -> Vec<Self> {
+	pub async fn load_all_users() -> Vec<Self> {
 		let query = "Select * From dbo.Users;";
 
-		User::load_collection(&query, data_context).await
+		User::load_collection(query).await
 	}
 
 	/// Loads a single user by the identifier provided.
-	pub async fn load_user_by_id(id: &Uuid, data_context: &mut DataContext) -> Option<Self> {
+	pub async fn load_user_by_id(id: &Uuid) -> Option<Self> {
 		let query = "Select * From dbo.Users Where Id = @P1";
 
-		User::load_single_with_params(query, &[&id.to_owned()], data_context).await
+		User::load_single_with_params(query, &[&id.to_owned()]).await
 	}
 
 	/// Loads a user where the name or email matches the supplied values.
-	pub async fn load_user_by_name_or_email(name: &str, email: &str, data_context: &mut DataContext) -> Option<Self> {
+	pub async fn load_user_by_name_or_email(name: &str, email: &str) -> Option<Self> {
 		let query = "Select * From dbo.Users Where Name = @P1 OR email = @P2";
 
-		User::load_single_with_params(query, &[&name.to_owned(), &email.to_owned()], data_context).await
+		User::load_single_with_params(query, &[&name.to_owned(), &email.to_owned()]).await
 	}
 
 	/// Updates the password of an existing user.
-	pub async fn update_password(id: &Uuid, new_password: Vec<u8>, data_context: &mut DataContext) -> bool {
+	pub async fn update_password(id: &Uuid, new_password: Vec<u8>) -> bool {
 		let query = "Update dbo.Users Set Password = @P1 Where ID = @P2";
 
-		match User::insert_with_params(query, &[&new_password, id], data_context).await {
+		match User::insert_with_params(query, &[&new_password, id]).await {
 			Ok(_) => true,
 			Err(error) => {
-				log::error!("Error During User Insert: {}", error.clone());
+				log::error!("Error During User Insert: {}", error);
 				false
 			}
 		}
 	}
 
-	pub async fn update_name_email(id: &Uuid, new_name: &str, new_email: &str, data_context: &mut DataContext) -> bool {
+	pub async fn update_name_email(id: &Uuid, new_name: &str, new_email: &str) -> bool {
 		let mut query = "Update dbo.Users SET ".to_owned();
 		let mut updated_both = false;
-		let mut single_value = new_name.clone();
+		let mut single_value = new_name;
 
-		if new_name != "" {
+		if !new_name.is_empty() {
 			query += "Name = @P1 ";
 
-			if new_email != "" {
+			if !new_email.is_empty() {
 				updated_both = true;
-				query += "EMail = @P2 ";
+				query += "Email = @P2 ";
 			}
-		} else if new_email != "" {
-			query += "EMail = @P1 ";
+		} else if !new_email.is_empty() {
+			query += "Email = @P1 ";
 			single_value = new_email;
 		}
 
 		if updated_both {
 			query += "WHERE ID = @P3";
 
-			match User::insert_with_params(&query, &[&new_name, &new_email, id], data_context).await {
+			match User::insert_with_params(&query, &[&new_name, &new_email, id]).await {
 				Ok(_) => return true,
 				Err(error) => {
-					log::error!("Error During User Update: {}", error.clone());
+					log::error!("Error During User Update: {}", error);
 				}
 			};
 		} else {
 			query += "WHERE ID = @P2";
 
-			match User::insert_with_params(&query, &[&single_value, id], data_context).await {
+			match User::insert_with_params(&query, &[&single_value, id]).await {
 				Ok(_) => return true,
 				Err(error) => {
-					log::error!("Error During User Update: {}", error.clone());
+					log::error!("Error During User Update: {}", error);
 				}
 			};
 		}
@@ -98,15 +98,14 @@ impl User {
 	}
 
 	/// Inserts a new user into the database.
-	pub async fn insert_new(user: Self, data_context: &mut DataContext) -> bool {
+	pub async fn insert_new(user: Self) -> bool {
 		let query = "Insert Into dbo.Users Values(@P1, @P2, @P3, @P4)";
 
-		// TODO: Add general logging for insert errors.
-		match User::insert_with_params(query, &[&user.id, &user.name, &user.email, &user.password], data_context).await {
+		match User::insert_with_params(query, &[&user.id, &user.name, &user.email, &user.password]).await {
 			Ok(_) => true,
 			Err(error) => {
 				dbg!(&error);
-				log::error!("Error During User Insert: {}", error.clone());
+				log::error!("Error During User Insert: {}", error);
 				false
 			}
 		}

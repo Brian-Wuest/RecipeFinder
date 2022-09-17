@@ -2,7 +2,7 @@
 extern crate lazy_static;
 use crate::api::RecipeController;
 use crate::models::config::AppConfig;
-use crate::{api::CategoryController, api::UsersController, data::common::DataContext};
+use crate::{api::CategoryController, api::UsersController};
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
@@ -10,12 +10,13 @@ use actix_web::cookie::{Key, SameSite};
 use actix_web::http::header;
 use actix_web::middleware::{Compress, Logger};
 use actix_web::{App, HttpServer};
+use bb8::Pool;
+use bb8_tiberius::ConnectionManager;
 use futures::executor;
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::fs::File;
 use std::io::BufReader;
-use std::sync::Mutex;
 
 // Create modules
 mod api;
@@ -29,9 +30,9 @@ lazy_static! {
 	#[derive(Debug)]
 	pub static ref APP_DATA: AppConfig = load_config();
 
-	// Database context (pool).
+	// Database connection pool.
 	#[derive(Debug)]
-	pub static ref DATA_CONTEXT: Mutex<DataContext> = load_data_context();
+	pub static ref DATA_POOL: Pool<ConnectionManager> = load_connection_manager();
 }
 
 /// Gets the key from the application configuration or generates a random key if the configuration was not filled in.
@@ -45,7 +46,7 @@ fn get_key() -> Key {
 	} else {
 		let mut key_vec: Vec<u8> = Vec::new();
 
-		for key_value in APP_DATA.web_info.key.split(",") {
+		for key_value in APP_DATA.web_info.key.split(',') {
 			key_vec.push(key_value.parse().unwrap());
 		}
 
@@ -64,7 +65,7 @@ fn generate_key() -> Vec<u8> {
 		key_string = key_string + &value.to_string();
 
 		if index != master_value.len() - 1 {
-			key_string = key_string + ","
+			key_string += ","
 		}
 	}
 
@@ -138,9 +139,11 @@ fn load_config() -> AppConfig {
 	AppConfig::new()
 }
 
-fn load_data_context() -> Mutex<DataContext> {
+fn load_connection_manager() -> Pool<ConnectionManager> {
 	let data_info = APP_DATA.database_info.clone();
-	Mutex::new(executor::block_on(data_info.create_pool()))
+	let connection_stuff = executor::block_on(data_info.create_pool());
+
+	connection_stuff.connection_pool
 }
 
 /// Example provided by: https://github.com/actix/examples/tree/master/https-tls/rustls

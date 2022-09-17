@@ -29,11 +29,7 @@ impl GetCategoryResponse {
 				));
 			}
 
-			result.push(GetCategoryResponse::new(
-				data_model.id.clone(),
-				data_model.name.clone(),
-				parent_category,
-			));
+			result.push(GetCategoryResponse::new(data_model.id, data_model.name.clone(), parent_category));
 		}
 
 		result

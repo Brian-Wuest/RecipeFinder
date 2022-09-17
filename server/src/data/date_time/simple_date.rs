@@ -1,6 +1,6 @@
+use serde::Serialize;
 use tiberius::time::time::Date;
 use time::Month;
-use serde::Serialize;
 
 /// This date is used as a wrapper for the tiberius "NaiveDate" type. This allows us to specify the default date value.
 #[derive(Debug, Clone, Serialize)]
@@ -19,8 +19,8 @@ impl SimpleDate {
 
 	/// Determines if the passed in date matches the minimum or maximum date.
 	pub fn is_min_or_max_date(date_to_check: &SimpleDate) -> bool {
-		SimpleDate::do_dates_match(&SimpleDate::get_min_date(), &date_to_check)
-			|| SimpleDate::do_dates_match(&SimpleDate::get_max_date(), &date_to_check)
+		SimpleDate::do_dates_match(&SimpleDate::get_min_date(), date_to_check)
+			|| SimpleDate::do_dates_match(&SimpleDate::get_max_date(), date_to_check)
 	}
 
 	/// Determines if too dates match on year, month, and day.

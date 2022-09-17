@@ -1,4 +1,4 @@
-use crate::data::common::{DataContext, DataElement, DataTools};
+use crate::data::common::{DataElement, DataTools};
 use serde::{Deserialize, Serialize};
 use tiberius::Row;
 
@@ -14,10 +14,10 @@ impl Category {
 	}
 
 	/// Retrieves all categories from the system.
-	pub async fn load_all_categories(data_context: &mut DataContext) -> Vec<Self> {
+	pub async fn load_all_categories() -> Vec<Self> {
 		let query = "Select * From dbo.Category;";
 
-		Category::load_collection(&query, data_context).await
+		Category::load_collection(query).await
 	}
 
 	pub(crate) fn load_from_combined_row(id: &i64, start_index: &mut usize, row: &Row) -> Self {

@@ -1,5 +1,5 @@
-use tiberius::time::time::PrimitiveDateTime;
 use serde::Serialize;
+use tiberius::time::time::PrimitiveDateTime;
 
 use super::{simple_date::SimpleDate, simple_time::SimpleTime};
 
@@ -20,8 +20,8 @@ impl SimpleDateTime {
 
 	/// Determines if the passed in date matches the minimum or maximum date.
 	pub fn is_min_or_max_date(date_to_check: &SimpleDateTime) -> bool {
-		SimpleDateTime::do_dates_match(&SimpleDateTime::get_min_date(), &date_to_check)
-			|| SimpleDateTime::do_dates_match(&SimpleDateTime::get_max_date(), &date_to_check)
+		SimpleDateTime::do_dates_match(&SimpleDateTime::get_min_date(), date_to_check)
+			|| SimpleDateTime::do_dates_match(&SimpleDateTime::get_max_date(), date_to_check)
 	}
 
 	/// Determines if too dates match on year, month, and day.

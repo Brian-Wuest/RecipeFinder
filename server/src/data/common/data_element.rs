@@ -2,45 +2,39 @@ use async_trait::async_trait;
 use futures::{future, StreamExt};
 use tiberius::{ExecuteResult, Result, Row, ToSql};
 
-use super::DataContext;
+use crate::DATA_POOL;
 
 #[async_trait]
 pub trait DataElement {
-	async fn load_collection_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql], data_context: &mut DataContext) -> Vec<Self>
+	async fn load_collection_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql]) -> Vec<Self>
 	where
 		Self: Sized,
 	{
-		let connection = &mut data_context.connection_pool.get().await.unwrap();
+		let connection = &mut DATA_POOL.get().await.unwrap();
 
 		let initial_result = connection.query(query, params).await;
 
 		let mut final_result: Vec<Self> = Vec::new();
 
-		match initial_result {
-			Ok(stream) => {
-				let row_stream = stream.into_row_stream();
+		if let Ok(stream) = initial_result {
+			let row_stream = stream.into_row_stream();
 
-				let row_item = row_stream.for_each(|row| {
-					match row {
-						Ok(data_row) => {
-							let populated_item = DataElement::populate_element_from_row(data_row);
+			let row_item = row_stream.for_each(|row| {
+				if let Ok(data_row) = row {
+					let populated_item = DataElement::populate_element_from_row(data_row);
 
-							match populated_item {
-								Some(data_element) => {
-									final_result.push(data_element);
-								}
-								None => {}
-							}
+					match populated_item {
+						Some(data_element) => {
+							final_result.push(data_element);
 						}
-						Err(_) => {}
+						None => {}
 					}
+				}
 
-					future::ready(())
-				});
+				future::ready(())
+			});
 
-				row_item.await;
-			}
-			_ => {}
+			row_item.await;
 		}
 
 		final_result
@@ -48,52 +42,46 @@ pub trait DataElement {
 
 	/// Loads a collection of data elements from the database and places them into a vector
 	/// When there is an error in processing or if there are no results, an empty vector is returned.
-	async fn load_collection(query: &str, data_context: &mut DataContext) -> Vec<Self>
+	async fn load_collection(query: &str) -> Vec<Self>
 	where
 		Self: Sized,
 	{
-		let connection = &mut data_context.connection_pool.get().await.unwrap();
+		let connection = &mut DATA_POOL.get().await.unwrap();
 
 		let initial_result = connection.simple_query(query).await;
 
 		let mut final_result: Vec<Self> = Vec::new();
 
-		match initial_result {
-			Ok(stream) => {
-				let row_stream = stream.into_row_stream();
+		if let Ok(stream) = initial_result {
+			let row_stream = stream.into_row_stream();
 
-				let row_item = row_stream.for_each(|row| {
-					match row {
-						Ok(data_row) => {
-							let populated_item = DataElement::populate_element_from_row(data_row);
+			let row_item = row_stream.for_each(|row| {
+				if let Ok(data_row) = row {
+					let populated_item = DataElement::populate_element_from_row(data_row);
 
-							match populated_item {
-								Some(data_element) => {
-									final_result.push(data_element);
-								}
-								None => {}
-							}
+					match populated_item {
+						Some(data_element) => {
+							final_result.push(data_element);
 						}
-						Err(_) => {}
+						None => {}
 					}
+				}
 
-					future::ready(())
-				});
+				future::ready(())
+			});
 
-				row_item.await;
-			}
-			_ => {}
+			row_item.await;
 		}
 
 		final_result
 	}
 
 	/// Loads the first record from the query and returns the data element or none if there was an error loading.
-	async fn load_single(query: &str, data_context: &mut DataContext) -> Option<Self>
+	async fn load_single(query: &str) -> Option<Self>
 	where
 		Self: Sized,
 	{
-		match &mut data_context.connection_pool.get().await {
+		match &mut DATA_POOL.get().await {
 			Ok(connection) => {
 				let initial_result = connection.simple_query(query).await;
 
@@ -117,11 +105,11 @@ pub trait DataElement {
 	}
 
 	/// Loads the first record from the query and returns the data element or none if there was an error loading.
-	async fn load_single_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql], data_context: &mut DataContext) -> Option<Self>
+	async fn load_single_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql]) -> Option<Self>
 	where
 		Self: Sized,
 	{
-		match &mut data_context.connection_pool.get().await {
+		match &mut DATA_POOL.get().await {
 			Ok(connection) => {
 				let initial_result = connection.query(query, params).await;
 
@@ -144,18 +132,18 @@ pub trait DataElement {
 		}
 	}
 
-	async fn delete(query: &str, data_context: &mut DataContext) -> Result<ExecuteResult> {
-		let connection = &mut data_context.connection_pool.get().await.unwrap();
+	async fn delete(query: &str) -> Result<ExecuteResult> {
+		let connection = &mut DATA_POOL.get().await.unwrap();
 		connection.execute(query, &[]).await
 	}
 
-	async fn insert(query: &str, data_context: &mut DataContext) -> Result<ExecuteResult> {
-		let connection = &mut data_context.connection_pool.get().await.unwrap();
+	async fn insert(query: &str) -> Result<ExecuteResult> {
+		let connection = &mut DATA_POOL.get().await.unwrap();
 		connection.execute(query, &[]).await
 	}
 
-	async fn insert_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql], data_context: &mut DataContext) -> Result<ExecuteResult> {
-		let connection = &mut data_context.connection_pool.get().await.unwrap();
+	async fn insert_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql]) -> Result<ExecuteResult> {
+		let connection = &mut DATA_POOL.get().await.unwrap();
 		connection.execute(query, params).await
 	}
 

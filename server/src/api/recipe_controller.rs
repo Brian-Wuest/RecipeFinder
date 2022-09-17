@@ -1,4 +1,4 @@
-use crate::{models::data::Recipe, DATA_CONTEXT};
+use crate::models::data::Recipe;
 use actix_identity::Identity;
 use actix_web::{
 	web::{self, Json},
@@ -15,19 +15,8 @@ impl RecipeController {
 	}
 
 	async fn index(_user: Identity, _req: HttpRequest) -> Result<Json<Vec<Recipe>>> {
-		let mut result = Vec::new();
 		log::info!("Loading all recipes");
-
-		match DATA_CONTEXT.lock() {
-			Ok(mut context) => {
-				result = Recipe::load_all_shared_recipes(&mut context).await;
-			}
-			Err(err) => {
-				println!("Error: {}", err);
-				log::error!("Error:, {}", err);
-				panic!("Error: {}", err);
-			}
-		}
+		let result = Recipe::load_all_shared_recipes().await;
 
 		Ok(web::Json(result))
 	}

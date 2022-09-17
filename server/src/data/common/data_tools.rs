@@ -23,10 +23,7 @@ impl DataTools {
 		let result: Option<Uuid> = row.get(*start_index);
 		*start_index += 1;
 
-		match result {
-			Some(actual_result) => Some(actual_result),
-			None => None,
-		}
+		result
 	}
 
 	pub fn get_string_and_increment(start_index: &mut usize, row: &Row) -> String {
@@ -43,10 +40,7 @@ impl DataTools {
 		let result: Option<&str> = row.get(*start_index);
 		*start_index += 1;
 
-		match result {
-			Some(actual_result) => Some(actual_result.to_string()),
-			None => None,
-		}
+		result.map(|actual_result| actual_result.to_string())
 	}
 
 	pub fn get_bool_and_increment(start_index: &mut usize, row: &Row) -> bool {
@@ -118,10 +112,7 @@ impl DataTools {
 		let result: Option<&[u8]> = row.get(*start_index);
 		*start_index += 1;
 
-		match result {
-			Some(array) => Some(array.to_vec()),
-			None => None,
-		}
+		result.map(|array| array.to_vec())
 	}
 
 	pub fn get_decimal_as_option_and_increment(start_index: &mut usize, row: &Row) -> Option<Decimal> {
@@ -144,20 +135,14 @@ impl DataTools {
 		let result: Option<Date> = row.get(*start_index);
 		*start_index += 1;
 
-		match result {
-			Some(actual_result) => Some(SimpleDate(actual_result)),
-			None => None,
-		}
+		result.map(SimpleDate)
 	}
 
 	pub fn get_simple_time_as_option_and_increment(start_index: &mut usize, row: &Row) -> Option<SimpleTime> {
 		let result: Option<Time> = row.get(*start_index);
 		*start_index += 1;
 
-		match result {
-			Some(actual_result) => Some(SimpleTime(actual_result)),
-			None => None,
-		}
+		result.map(SimpleTime)
 	}
 
 	pub fn get_simple_date_time_and_increment(start_index: &mut usize, row: &Row) -> SimpleDateTime {
@@ -175,10 +160,7 @@ impl DataTools {
 
 		*start_index += 1;
 
-		match result {
-			Some(actual_result) => Some(SimpleDateTime(actual_result)),
-			None => None,
-		}
+		result.map(SimpleDateTime)
 	}
 
 	pub fn get_simple_date_time_offset_and_increment(start_index: &mut usize, row: &Row) -> SimpleOffsetDateTime {
@@ -219,9 +201,6 @@ impl DataTools {
 
 		*start_index += 1;
 
-		match result {
-			Some(actual_result) => Some(SimpleOffsetDateTime(actual_result)),
-			None => None,
-		}
+		result.map(SimpleOffsetDateTime)
 	}
 }

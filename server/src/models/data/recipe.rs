@@ -1,4 +1,4 @@
-use crate::data::common::{DataContext, DataElement, DataTools};
+use crate::data::common::{DataElement, DataTools};
 use serde::{Deserialize, Serialize};
 use tiberius::{Row, Uuid};
 
@@ -15,10 +15,10 @@ pub struct Recipe {
 
 impl Recipe {
 	/// Retrieves all recipes from the system.
-	pub async fn load_all_shared_recipes(data_context: &mut DataContext) -> Vec<Self> {
+	pub async fn load_all_shared_recipes() -> Vec<Self> {
 		let query = "Select * From dbo.Recipe Where Shared = 1;";
 
-		Recipe::load_collection(&query, data_context).await
+		Recipe::load_collection(query).await
 	}
 
 	fn load_from_combined_row(id: &Uuid, start_index: &mut usize, row: &Row) -> Self {

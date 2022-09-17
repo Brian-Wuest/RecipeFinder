@@ -5,7 +5,6 @@ use crate::models::response::GetCurrentUserResponse;
 use crate::models::response::GetUsersResponse;
 use crate::models::{data::users::User, request::users::RegisterUserRequest};
 use crate::util::auth_services;
-use crate::DATA_CONTEXT;
 use actix_identity::Identity;
 use actix_web::cookie::Cookie;
 use actix_web::cookie::SameSite;
@@ -15,7 +14,6 @@ use actix_web::{
 	web::{self, Json},
 	HttpMessage, HttpRequest, HttpResponse, Responder, Result,
 };
-use std::borrow::BorrowMut;
 use tiberius::Uuid;
 
 pub struct UsersController {}
@@ -43,9 +41,8 @@ impl UsersController {
 
 		if let Some(identity) = user {
 			let id = Uuid::parse_str(&identity.id().unwrap()).unwrap();
-			let mut context = DATA_CONTEXT.lock().unwrap();
 
-			match User::load_user_by_id(&id, &mut context).await {
+			match User::load_user_by_id(&id).await {
 				Some(user) => {
 					response.id = Some(user.id);
 					response.name = Some(user.name);
@@ -60,12 +57,11 @@ impl UsersController {
 
 	async fn register(form: Json<RegisterUserRequest>, request: HttpRequest) -> Result<String> {
 		// TODO: Try to figure out how to limit the number of registrations can happen from the same IP.
-		let mut context = DATA_CONTEXT.lock().unwrap();
 		let name = form.name.clone();
 		let email = form.email.clone();
 		let form_pass = form.password.clone();
 
-		match User::load_user_by_name_or_email(&name, &email, &mut context).await {
+		match User::load_user_by_name_or_email(&name, &email).await {
 			Some(_) => Err(ErrorBadRequest("User registration already exists")),
 			None => {
 				// user does not exist, able to create user entry.
@@ -75,9 +71,9 @@ impl UsersController {
 						let user = User::new(&name, &email, pass.as_bytes());
 
 						// Insert the user information.
-						if User::insert_new(user, &mut context).await {
+						if User::insert_new(user).await {
 							// This needs to be done because the insert statement doesn't provide the id after inserting the record.
-							match User::load_user_by_name_or_email(&name, &email, &mut context).await {
+							match User::load_user_by_name_or_email(&name, &email).await {
 								Some(user) => {
 									// Log the user in so they get the session cookie for future requests.
 									Identity::login(&request.extensions(), user.id.to_string()).unwrap();
@@ -97,10 +93,7 @@ impl UsersController {
 	}
 
 	async fn login(request: HttpRequest, form: Json<LoginRequest>) -> Result<impl Responder> {
-		////Result<Json<GetCurrentUserResponse>> {
-		let mut context = DATA_CONTEXT.lock().unwrap();
-
-		match User::load_user_by_name_or_email(&form.name, &form.name, &mut context).await {
+		match User::load_user_by_name_or_email(&form.name, &form.name).await {
 			Some(user) => {
 				// This is a valid user, now check the password.
 				match user.password {
@@ -127,11 +120,11 @@ impl UsersController {
 				// Log the user in so they get the session cookie for future requests.
 				// attach a verified user identity to the active session
 				Identity::login(&request.extensions(), user.id.to_string()).unwrap();
-				let mut response = GetCurrentUserResponse::default();
-
-				response.id = Some(user.id);
-				response.name = Some(user.name);
-				response.email = Some(user.email);
+				let response = GetCurrentUserResponse {
+					id: Some(user.id),
+					name: Some(user.name),
+					email: Some(user.email),
+				};
 
 				// The Either::Left and Either::Right allows us to specify different type of responses based on the processing of the endpoint.
 				// In the "Ok" we can return the user data with the response.
@@ -152,11 +145,10 @@ impl UsersController {
 	// Need to have a valid identity in order to change the password.
 	async fn change_password(user: Identity, form: Json<ChangePasswordRequest>) -> impl Responder {
 		let user_id = Uuid::parse_str(&user.id().unwrap()).unwrap();
-		let mut context = DATA_CONTEXT.lock().unwrap();
 		let old_password = form.old_password.clone();
 		let new_password = form.new_password.clone();
 
-		match User::load_user_by_id(&user_id, &mut context).await {
+		match User::load_user_by_id(&user_id).await {
 			Some(user) => {
 				// validate that the current user has a password because it is currently not required in the system.
 				match user.password {
@@ -180,7 +172,7 @@ impl UsersController {
 											}
 
 											// Attempt to update the database with the new password.
-											if !User::update_password(&user_id, new_hashed_password.into_bytes(), &mut context).await {
+											if !User::update_password(&user_id, new_hashed_password.into_bytes()).await {
 												return HttpResponse::BadRequest();
 											}
 										}
@@ -220,43 +212,32 @@ impl UsersController {
 	// This will force the route to have an authenticated user.
 	// If the Identity is "None", the client will get a 401 (Unauthorized) response.
 	async fn get_users(_user: Identity, _request: HttpRequest) -> Result<Json<Vec<GetUsersResponse>>> {
-		let mut result = Vec::new();
+		let data_result = User::load_all_users().await;
 
-		match DATA_CONTEXT.lock() {
-			Ok(mut context) => {
-				let data_result = User::load_all_users(context.borrow_mut()).await;
-
-				result = GetUsersResponse::convert_from_data_model(data_result);
-			}
-			Err(err) => {
-				println!("Error: {}", err);
-				panic!("Error: {}", err);
-			}
-		}
+		let result = GetUsersResponse::convert_from_data_model(data_result);
 
 		Ok(web::Json(result))
 	}
 
 	async fn update_details(identity: Identity, form: Json<UpdateDetailsRequest>) -> Result<String> {
 		let user_id = Uuid::parse_str(&identity.id().unwrap()).unwrap();
-		let mut context = DATA_CONTEXT.lock().unwrap();
 
-		match User::load_user_by_id(&user_id, &mut context).await {
-			Some(user) => {
+		match User::load_user_by_id(&user_id).await {
+			Some(_user) => {
 				let name = form.name.clone().unwrap_or_default();
 				let email = form.email.clone().unwrap_or_default();
 				let trimmed_name = name.trim();
 				let trimmed_email = email.trim();
 
-				if trimmed_name == "" && trimmed_email == "" {
+				if trimmed_name.is_empty() && trimmed_email.is_empty() {
 					return Err(ErrorBadRequest("Both user name and email are blank"));
 				}
 
-				match User::load_user_by_name_or_email(&name, &email, &mut context).await {
+				match User::load_user_by_name_or_email(&name, &email).await {
 					Some(_) => return Err(ErrorBadRequest("User registration already exists")),
 					None => {
 						// This user-name and/or email don't exist yet, construct an update statement and update the information.
-						if !User::update_name_email(&user_id, &trimmed_name, &trimmed_email, &mut context).await {
+						if !User::update_name_email(&user_id, trimmed_name, trimmed_email).await {
 							return Err(ErrorBadRequest("Unable to update username or email"));
 						}
 					}

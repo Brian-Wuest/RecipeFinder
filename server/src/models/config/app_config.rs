@@ -10,6 +10,12 @@ pub struct AppConfig {
 	pub web_info: WebInfo,
 }
 
+impl Default for AppConfig {
+	fn default() -> Self {
+		Self::new()
+	}
+}
+
 impl AppConfig {
 	pub fn new() -> Self {
 		// Load the configuration file from the file path.

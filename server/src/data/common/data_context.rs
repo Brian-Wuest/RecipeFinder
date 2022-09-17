@@ -72,8 +72,6 @@ impl DataContext {
 			}
 		};
 
-		DataContext {
-			connection_pool: connection_pool,
-		}
+		DataContext { connection_pool }
 	}
 }

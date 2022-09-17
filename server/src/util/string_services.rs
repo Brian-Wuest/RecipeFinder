@@ -10,7 +10,7 @@ impl StringServices {
 
 		for (i, el) in value.graphemes(true).enumerate() {
 			if i >= start && i <= end {
-				return_value = return_value + el;
+				return_value += el;
 			}
 		}
 
@@ -24,7 +24,7 @@ impl StringServices {
 
 		for (i, el) in value.graphemes(true).enumerate() {
 			if i >= start && i <= end {
-				return_value = return_value + el;
+				return_value += el;
 			}
 		}
 

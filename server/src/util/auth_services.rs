@@ -11,7 +11,7 @@ pub fn hash_password(password: String) -> Result<String, &'static str> {
 		..Default::default()
 	};
 
-	argon2::hash_encoded(password.as_bytes(), &salt.as_bytes(), &config).map_err(|err| {
+	argon2::hash_encoded(password.as_bytes(), salt.as_bytes(), &config).map_err(|err| {
 		dbg!(err);
 		"Internal Server Error"
 	})

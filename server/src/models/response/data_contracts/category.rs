@@ -11,7 +11,7 @@ pub struct Category {
 impl Category {
 	pub(crate) fn convert_from_data_model(data_model: &DataCategory) -> Self {
 		Category {
-			id: data_model.id.clone(),
+			id: data_model.id,
 			name: data_model.name.clone(),
 		}
 	}

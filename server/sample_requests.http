@@ -8,9 +8,9 @@ POST https://127.0.0.1:8443/api/users/_register HTTP/1.1
 content-type: application/json
 
 {
-  "name": "some_one",
-  "email": "some.one@outlook.com",
-  "password": "password1"
+  "name": "some_one1",
+  "email": "some.one1@outlook.com",
+  "password": "password2"
 }
 
 ###

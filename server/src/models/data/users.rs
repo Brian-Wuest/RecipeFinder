@@ -99,7 +99,7 @@ impl User {
 
 	/// Inserts a new user into the database.
 	pub async fn insert_new(user: Self) -> bool {
-		let query = "Insert Into dbo.Users Values(@P1, @P2, @P3, @P4)";
+		let query = "EXEC stpCreateUser @P1, @P2, @P3, @P4";
 
 		match User::insert_with_params(query, &[&user.id, &user.name, &user.email, &user.password]).await {
 			Ok(_) => true,

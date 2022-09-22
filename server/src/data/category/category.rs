@@ -9,17 +9,6 @@ pub struct Category {
 }
 
 impl Category {
-	pub fn new(id: i64, name: String) -> Self {
-		Category { id, name }
-	}
-
-	/// Retrieves all categories from the system.
-	pub async fn load_all_categories() -> Vec<Self> {
-		let query = "Select * From dbo.Category;";
-
-		Category::load_collection(query).await
-	}
-
 	pub(crate) fn load_from_combined_row(id: &i64, start_index: &mut usize, row: &Row) -> Self {
 		Category {
 			id: *id,

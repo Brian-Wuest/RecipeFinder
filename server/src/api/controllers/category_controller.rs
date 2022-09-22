@@ -1,5 +1,4 @@
-use crate::models::data::SubCategory;
-use crate::models::response::GetCategoryResponse;
+use crate::{api::models::response::GetCategoryResponse, data::category::SubCategory};
 use actix_identity::Identity;
 use actix_web::{
 	web::{self, Json},

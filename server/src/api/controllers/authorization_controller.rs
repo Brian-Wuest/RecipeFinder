@@ -5,7 +5,7 @@ use actix_web::{
 };
 use tiberius::Uuid;
 
-use crate::models::{data::ApplicationRole, response::GetAuthorizationResponse};
+use crate::{api::models::response::GetAuthorizationResponse, data::user::ApplicationRole};
 
 pub struct AuthorizationController {}
 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::data::Category as DataCategory;
+use crate::data::category::Category as DataCategory;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Category {

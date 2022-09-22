@@ -22,11 +22,11 @@ impl ApplicationRole {
 	}
 
 	pub(crate) fn load_from_combined_row(id: &i32, start_index: &mut usize, row: &Row) -> Self {
-		ApplicationRole {
-			id: *id,
-			name: DataTools::get_string_and_increment(start_index, row),
-			classification: DataTools::get_i16_and_increment(start_index, row),
-		}
+		ApplicationRole::new(
+			*id,
+			DataTools::get_string_and_increment(start_index, row),
+			DataTools::get_i16_and_increment(start_index, row),
+		)
 	}
 }
 

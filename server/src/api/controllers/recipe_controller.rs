@@ -1,9 +1,10 @@
-use crate::models::data::Recipe;
 use actix_identity::Identity;
 use actix_web::{
 	web::{self, Json},
 	HttpRequest, Result,
 };
+
+use crate::data::recipe::Recipe;
 
 pub struct RecipeController {}
 

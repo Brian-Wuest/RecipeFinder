@@ -1,9 +1,10 @@
-use crate::models::request::users::ChangePasswordRequest;
-use crate::models::request::users::LoginRequest;
-use crate::models::request::users::UpdateDetailsRequest;
-use crate::models::response::GetCurrentUserResponse;
-use crate::models::response::GetUsersResponse;
-use crate::models::{data::users::User, request::users::RegisterUserRequest};
+use crate::api::models::request::users::ChangePasswordRequest;
+use crate::api::models::request::users::LoginRequest;
+use crate::api::models::request::users::RegisterUserRequest;
+use crate::api::models::request::users::UpdateDetailsRequest;
+use crate::api::models::response::GetCurrentUserResponse;
+use crate::api::models::response::GetUsersResponse;
+use crate::data::user::User;
 use crate::util::auth_services;
 use actix_identity::Identity;
 use actix_web::cookie::Cookie;

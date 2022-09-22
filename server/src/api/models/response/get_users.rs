@@ -1,6 +1,7 @@
-use crate::models::data::users::User;
 use serde::{Deserialize, Serialize};
 use tiberius::Uuid;
+
+use crate::data::user::User;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct GetUsersResponse {

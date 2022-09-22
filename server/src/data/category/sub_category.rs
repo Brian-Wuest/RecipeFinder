@@ -13,15 +13,6 @@ pub struct SubCategory {
 }
 
 impl SubCategory {
-	pub fn new(id: i64, name: String, parent_category_id: Option<i64>) -> Self {
-		SubCategory {
-			id,
-			name,
-			parent_category_id,
-			parent_category: None,
-		}
-	}
-
 	/// Retrieves all sub-categories from the system.
 	pub async fn load_all_categories() -> Vec<Self> {
 		let query = "Select * 

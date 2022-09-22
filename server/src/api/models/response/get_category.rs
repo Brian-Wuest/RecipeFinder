@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::models::data::SubCategory;
+use crate::data::category::SubCategory;
 
 use super::data_contracts::category::Category as ContractCategory;
 

@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
-use crate::api::RecipeController;
+use crate::api::{AuthorizationController, RecipeController};
 use crate::models::config::AppConfig;
 use crate::{api::CategoryController, api::UsersController};
 use actix_cors::Cors;
@@ -129,6 +129,7 @@ async fn main() -> std::io::Result<()> {
 			.configure(UsersController::config)
 			.configure(CategoryController::config)
 			.configure(RecipeController::config)
+			.configure(AuthorizationController::config)
 	})
 	.bind_rustls(host_address, config)?
 	.run()

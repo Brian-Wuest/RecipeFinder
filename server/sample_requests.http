@@ -59,3 +59,8 @@ content-type: application/json
 // Get a list of all shared recipes.
 GET https://127.0.0.1:8443/api/recipe HTTP/1.1
 content-type: application/json
+
+###
+// Gets the highest level of authorization for the current user.
+GET https://127.0.0.1:8443/api/authorization HTTP/1.1
+content-type: application/json

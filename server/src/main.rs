@@ -1,8 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
-use crate::api::{AuthorizationController, RecipeController};
+use crate::api::controllers::{AuthorizationController, CategoryController, RecipeController, UsersController};
 use crate::models::config::AppConfig;
-use crate::{api::CategoryController, api::UsersController};
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};

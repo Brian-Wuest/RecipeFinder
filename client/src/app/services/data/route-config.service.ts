@@ -41,5 +41,9 @@ export class RouteConfigService {
     return this.baseAPIPath + '/recipe';
   }
 
+  public get baseAuthorizationPath(): string {
+    return this.baseAPIPath + '/authorization';
+  }
+
   constructor() {}
 }

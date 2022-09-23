@@ -1,3 +1,4 @@
+use crate::api::guards::AuthorizationGuard;
 use crate::api::models::request::users::ChangePasswordRequest;
 use crate::api::models::request::users::LoginRequest;
 use crate::api::models::request::users::RegisterUserRequest;
@@ -5,6 +6,8 @@ use crate::api::models::request::users::UpdateDetailsRequest;
 use crate::api::models::response::GetCurrentUserResponse;
 use crate::api::models::response::GetUsersResponse;
 use crate::data::user::User;
+use crate::models::authorization_roles::BASIC;
+use crate::models::authorization_roles::SYS_ADMIN;
 use crate::util::auth_services;
 use actix_identity::Identity;
 use actix_web::cookie::Cookie;
@@ -25,13 +28,38 @@ impl UsersController {
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
 		cfg.service(
 			web::resource("/api/users/me")
-				.route(web::get().to(UsersController::index))
-				.route(web::put().to(UsersController::update_details)),
+				.route(
+					web::get()
+						.to(UsersController::index)
+						.guard(AuthorizationGuard::new(BASIC.to_string())),
+				)
+				.route(
+					web::put()
+						.to(UsersController::update_details)
+						.guard(AuthorizationGuard::new(BASIC.to_string())),
+				),
 		);
-		cfg.service(web::resource("/api/users").route(web::get().to(UsersController::get_users)));
+
+		cfg.service(
+			web::resource("/api/users").route(
+				web::get()
+					.to(UsersController::get_users)
+					.guard(AuthorizationGuard::new(SYS_ADMIN.to_string())),
+			),
+		);
+
 		cfg.service(web::resource("/api/users/_register").route(web::post().to(UsersController::register)));
+
 		cfg.service(web::resource("/api/users/_login").route(web::post().to(UsersController::login)));
-		cfg.service(web::resource("/api/users/_change_pwd").route(web::put().to(UsersController::change_password)));
+
+		cfg.service(
+			web::resource("/api/users/_change_pwd").route(
+				web::put()
+					.to(UsersController::change_password)
+					.guard(AuthorizationGuard::new(BASIC.to_string())),
+			),
+		);
+
 		cfg.service(web::resource("/api/users/_logout").route(web::post().to(UsersController::logout)));
 	}
 

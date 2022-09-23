@@ -5,7 +5,11 @@ use actix_web::{
 };
 use tiberius::Uuid;
 
-use crate::{api::models::response::GetAuthorizationResponse, data::user::ApplicationRole};
+use crate::{
+	api::{guards::AuthorizationGuard, models::response::GetAuthorizationResponse},
+	data::user::ApplicationRole,
+	models::authorization_roles::BASIC,
+};
 
 pub struct AuthorizationController {}
 
@@ -13,7 +17,13 @@ impl AuthorizationController {
 	pub fn config(cfg: &mut web::ServiceConfig) {
 		// It's not obvious in the current implementation but you can specify multiple HTTP methods for a specific resource.
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
-		cfg.service(web::resource("/api/authorization").route(web::get().to(AuthorizationController::get_user_authorization)));
+		cfg.service(
+			web::resource("/api/authorization").route(
+				web::get()
+					.to(AuthorizationController::get_user_authorization)
+					.guard(AuthorizationGuard::new(BASIC.to_string())),
+			),
+		);
 	}
 
 	async fn get_user_authorization(user: Identity, _req: HttpRequest) -> Result<Json<GetAuthorizationResponse>> {

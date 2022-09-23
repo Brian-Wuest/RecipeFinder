@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 use crate::api::controllers::{AuthorizationController, CategoryController, RecipeController, UsersController};
+use crate::api::middleware::AuthorizationMiddlware;
 use crate::models::config::AppConfig;
 use actix_cors::Cors;
 use actix_identity::IdentityMiddleware;
@@ -9,6 +10,7 @@ use actix_web::cookie::{Key, SameSite};
 use actix_web::http::header;
 use actix_web::middleware::{Compress, Logger};
 use actix_web::{App, HttpServer};
+use actix_web_grants::GrantsMiddleware;
 use bb8::Pool;
 use bb8_tiberius::ConnectionManager;
 use futures::executor;
@@ -102,6 +104,7 @@ async fn main() -> std::io::Result<()> {
 		App::new()
 			.wrap(Compress::default())
 			.wrap(Logger::default())
+			.wrap(GrantsMiddleware::with_extractor(AuthorizationMiddlware::extract))
 			.wrap(
 				IdentityMiddleware::builder()
 					// Since we are using cookie sessions there isn't a way to manually expire this without custom middleware.

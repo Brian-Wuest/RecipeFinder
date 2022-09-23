@@ -8,9 +8,9 @@ POST https://127.0.0.1:8443/api/users/_register HTTP/1.1
 content-type: application/json
 
 {
-  "name": "some_one1",
-  "email": "some.one1@outlook.com",
-  "password": "password2"
+  "name": "base",
+  "email": "base@outlook.com",
+  "password": "123"
 }
 
 ###
@@ -23,6 +23,18 @@ content-type: application/json
 {
   "name": "some_one",
   "password": "password1"
+}
+
+###
+// Log the user into the system.
+// The user name and password will be verified.
+// If this cannot be verified the response will be "bad-request".
+POST https://127.0.0.1:8443/api/users/_login HTTP/1.1
+content-type: application/json
+
+{
+  "name": "base",
+  "password": "123"
 }
 
 ###

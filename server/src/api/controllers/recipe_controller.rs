@@ -4,7 +4,7 @@ use actix_web::{
 	HttpRequest, Result,
 };
 
-use crate::data::recipe::Recipe;
+use crate::{api::guards::AuthorizationGuard, data::recipe::Recipe, models::authorization_roles::BASIC};
 
 pub struct RecipeController {}
 
@@ -12,7 +12,13 @@ impl RecipeController {
 	pub fn config(cfg: &mut web::ServiceConfig) {
 		// It's not obvious in the current implementation but you can specify multiple HTTP methods for a specific resource.
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
-		cfg.service(web::resource("/api/recipe").route(web::get().to(RecipeController::index)));
+		cfg.service(
+			web::resource("/api/recipe").route(
+				web::get()
+					.to(RecipeController::index)
+					.guard(AuthorizationGuard::new(BASIC.to_string())),
+			),
+		);
 	}
 
 	async fn index(_user: Identity, _req: HttpRequest) -> Result<Json<Vec<Recipe>>> {

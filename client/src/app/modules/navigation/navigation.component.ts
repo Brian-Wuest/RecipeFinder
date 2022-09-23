@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { OverlayPanel } from 'primeng/overlaypanel';
 import { Subscription } from 'rxjs';
@@ -25,7 +26,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   @ViewChild('op')
   loginPanel: OverlayPanel | undefined;
 
-  constructor(private userDataService: UserDataService, protected userService: UserService) {
+  constructor(private userDataService: UserDataService, protected userService: UserService, private router: Router) {
     this.isLightTheme = true;
 
     this.loginFormGroup = new FormGroup({
@@ -57,6 +58,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
         icon: "pi pi-sign-out",
         command: () => {
           this.userService.logOut();
+          this.router.navigate(['']);
         },
       },
     ];

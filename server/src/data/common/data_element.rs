@@ -137,6 +137,11 @@ pub trait DataElement {
 		connection.execute(query, &[]).await
 	}
 
+	async fn delete_with_params<'b>(query: &str, params: &'b [&'b dyn ToSql]) -> Result<ExecuteResult> {
+		let connection = &mut DATA_POOL.get().await.unwrap();
+		connection.execute(query, params).await
+	}
+
 	async fn insert(query: &str) -> Result<ExecuteResult> {
 		let connection = &mut DATA_POOL.get().await.unwrap();
 		connection.execute(query, &[]).await

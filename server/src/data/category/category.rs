@@ -2,6 +2,7 @@ use crate::data::common::{DataElement, DataTools};
 use serde::{Deserialize, Serialize};
 use tiberius::Row;
 
+/// This struct is only used to combine from sub-category.
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Category {
 	pub id: i64,

@@ -76,3 +76,28 @@ content-type: application/json
 // Gets the highest level of authorization for the current user.
 GET https://127.0.0.1:8443/api/authorization HTTP/1.1
 content-type: application/json
+
+###
+// Puts a new root-level category into the system
+PUT https://127.0.0.1:8443/api/category HTTP/1.1
+content-type: application/json
+
+{
+  "name": "some_cool_name",
+  "parentCategoryId": 342
+}
+
+###
+// Posts an updated name for a root-level category
+POST https://127.0.0.1:8443/api/category/23 HTTP/1.1
+content-type: application/json
+
+{
+  "name": "carbs",
+  "parentCategoryId": 432
+}
+
+###
+// Deletes an existing root-level category
+DELETE https://127.0.0.1:8443/api/category/23 HTTP/1.1
+content-type: application/json

@@ -8,6 +8,8 @@ use super::data_contracts::category::Category as ContractCategory;
 pub struct GetCategoryResponse {
 	pub id: i64,
 	pub name: String,
+
+	#[serde(rename = "parentCategory")]
 	pub parent_category: Option<ContractCategory>,
 }
 

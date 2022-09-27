@@ -27,11 +27,8 @@ impl CategoryController {
 		// You can specify multiple ".route" calls for different HTTP methods to point to different handlers!
 		cfg.service(
 			web::resource("/api/category")
-				.route(
-					web::get()
-						.to(CategoryController::index)
-						.guard(AuthorizationGuard::new(CAT_ADMIN.to_string())),
-				)
+				// Don't guard on the index as this does not need to be protected.
+				.route(web::get().to(CategoryController::index))
 				.route(
 					web::post()
 						.to(CategoryController::post)
@@ -55,7 +52,7 @@ impl CategoryController {
 		);
 	}
 
-	async fn index(_user: Identity, _req: HttpRequest) -> Result<Json<Vec<GetCategoryResponse>>> {
+	async fn index(_req: HttpRequest) -> Result<Json<Vec<GetCategoryResponse>>> {
 		let mut result = Vec::new();
 		let data_result = SubCategory::load_all_categories().await;
 

@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { IGetCategory } from './models/responses/get-category';
 import { CategoryService } from './services/category.service';
 import { UserService } from './services/user.service';
 
@@ -20,15 +21,11 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor(private userService: UserService, private categoryService: CategoryService) {}
 
   ngOnInit(): void {
-    this.userService.determineIfUserIsLoggedIn();
-
     this.categoryLoader = this.categoryService.categories.subscribe(categories => {
-      if (categories && categories.length > 0) {
-        // We have categories, finished loading.
-        this.loading = false;
-      }
+      this.categoriesUpdated(categories);
     });
 
+    this.userService.determineIfUserIsLoggedIn();
     this.categoryService.loadCategories();
   }
 
@@ -36,6 +33,17 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.categoryLoader) {
       this.categoryLoader.unsubscribe();
+    }
+  }
+
+  categoriesUpdated(categories: Array<IGetCategory>): void {
+    if (categories && categories.length > 0) {
+      // We have categories, finished loading.
+      this.loading = false;
+
+      // Remove the subscription since we don't need it anymore.
+      this.categoryLoader.unsubscribe();
+      this.categoryLoader = null;
     }
   }
 }

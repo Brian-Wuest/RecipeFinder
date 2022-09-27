@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { INewCategory } from 'src/app/models/requests/new-category';
 import { IUpdateCategory } from 'src/app/models/requests/update-category';
-import { IGetCategoryResponse } from 'src/app/models/responses/get-category';
+import { IGetCategory } from 'src/app/models/responses/get-category';
 import { RouteConfigService } from './route-config.service';
 
 @Injectable({
@@ -12,18 +12,18 @@ import { RouteConfigService } from './route-config.service';
 export class CategoryDataService {
   constructor(private routeConfig: RouteConfigService, private httpClient: HttpClient) {}
 
-  getCategories(): Observable<Array<IGetCategoryResponse>> {
-    return this.httpClient.get<Array<IGetCategoryResponse>>(this.routeConfig.baseCategoryPath, { withCredentials: true });
+  getCategories(): Observable<Array<IGetCategory>> {
+    return this.httpClient.get<Array<IGetCategory>>(this.routeConfig.baseCategoryPath, { withCredentials: true });
   }
 
-  insertCategory(request: INewCategory): Observable<IGetCategoryResponse> {
-    return this.httpClient.post<IGetCategoryResponse>(this.routeConfig.baseCategoryPath, request, { withCredentials: true });
+  insertCategory(request: INewCategory): Observable<IGetCategory> {
+    return this.httpClient.post<IGetCategory>(this.routeConfig.baseCategoryPath, request, { withCredentials: true });
   }
 
-  updateCategory(id: number, request: IUpdateCategory): Observable<IGetCategoryResponse> {
+  updateCategory(id: number, request: IUpdateCategory): Observable<IGetCategory> {
     const route = this.routeConfig.baseCategoryPath + '/' + id.toString();
 
-    return this.httpClient.put<IGetCategoryResponse>(route, request, { withCredentials: true });
+    return this.httpClient.put<IGetCategory>(route, request, { withCredentials: true });
   }
 
   deleteCategory(id: number): Observable<string> {

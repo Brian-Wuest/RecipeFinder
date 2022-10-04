@@ -17,6 +17,27 @@
       "preLaunchTask": "build-app"
     },
     {
+      "name": "Server Release Launch",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/server/target/release/recipe-finder-server.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}/server",
+      "environment": [],
+      "console": "internalConsole",
+      "preLaunchTask": "build-server-release"
+    },
+    {
+      "name": "Client Release Launch",
+      "type": "msedge",
+      "cwd": "${workspaceRoot}/client",
+      "request": "launch",
+      "preLaunchTask": "client-release",
+      "url": "http://localhost:4200/",
+      "postDebugTask": "end_serve"
+    },
+    {
       "name": "Client Launch",
       "type": "msedge",
       "cwd": "${workspaceRoot}/client",
@@ -40,6 +61,14 @@
       "configurations": [
         "Server Launch",
         "Client Launch"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Client-Server-Release",
+      "configurations": [
+        "Server Release Launch",
+        "Client Release Launch"
       ],
       "stopAll": true
     }

@@ -29,6 +29,6 @@ export class CategoryDataService {
   deleteCategory(id: number): Observable<string> {
     const route = this.routeConfig.baseCategoryPath + '/' + id.toString();
 
-    return this.httpClient.delete<string>(route, { withCredentials: false });
+    return this.httpClient.delete<string>(route, { withCredentials: true });
   }
 }

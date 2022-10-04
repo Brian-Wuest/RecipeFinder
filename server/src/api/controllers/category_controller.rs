@@ -144,7 +144,7 @@ impl CategoryController {
 			// If we got this far, then it is safe to delete this category
 			match SubCategory::delete_category_by_id(&inner_id).await {
 				Ok(_) => {
-					return Ok("Record deleted successfully!".to_string());
+					return Ok("{ \"result\": \"Record deleted successfully!\" }".to_string());
 				}
 				Err(error) => {
 					log::warn!("Error deleting category with id: {}, error: {}", &inner_id, error);

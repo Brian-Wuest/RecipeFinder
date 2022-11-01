@@ -1,4 +1,6 @@
+use actix_identity::Identity;
 use argon2::{self, Config};
+use tiberius::Uuid;
 
 use crate::APP_DATA;
 
@@ -24,4 +26,17 @@ pub fn verify<'a>(hash: &'a str, password: &'a str) -> Result<bool, &'a str> {
 		dbg!(err);
 		"Unauthorized"
 	})
+}
+
+/// Parses an identity to get the workable Uuid.
+pub fn parse_user_id_from_identity(identity: &Option<Identity>) -> Option<Uuid> {
+	if let Some(user_identity) = identity {
+		if let Ok(string_id) = &user_identity.id() {
+			if let Ok(user_id) = Uuid::parse_str(string_id) {
+				return Some(user_id);
+			}
+		}
+	}
+
+	None
 }

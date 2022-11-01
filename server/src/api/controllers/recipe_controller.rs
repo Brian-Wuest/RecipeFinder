@@ -25,6 +25,7 @@ impl RecipeController {
 	}
 
 	async fn index(user: Option<Identity>, _req: HttpRequest) -> Result<Json<Vec<Recipe>>> {
+		// Keep this log as an example of how to do logging.
 		log::info!("Loading all recipes");
 
 		let user_identity = parse_user_id_from_identity(&user);

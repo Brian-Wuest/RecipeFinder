@@ -4,7 +4,10 @@ use actix_web::{
 	HttpRequest, Result,
 };
 
-use crate::{api::guards::AuthorizationGuard, data::recipe::Recipe, models::authorization_roles::BASIC};
+use crate::{
+	api::guards::AuthorizationGuard, data::recipe::Recipe, models::authorization_roles::BASIC,
+	util::auth_services::parse_user_id_from_identity,
+};
 
 pub struct RecipeController {}
 
@@ -21,9 +24,12 @@ impl RecipeController {
 		);
 	}
 
-	async fn index(_user: Identity, _req: HttpRequest) -> Result<Json<Vec<Recipe>>> {
+	async fn index(user: Option<Identity>, _req: HttpRequest) -> Result<Json<Vec<Recipe>>> {
 		log::info!("Loading all recipes");
-		let result = Recipe::load_all_shared_recipes().await;
+
+		let user_identity = parse_user_id_from_identity(&user);
+
+		let result = Recipe::load_all_shared_recipes(user_identity).await;
 
 		Ok(web::Json(result))
 	}

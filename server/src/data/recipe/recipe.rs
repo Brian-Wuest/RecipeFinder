@@ -15,10 +15,13 @@ pub struct Recipe {
 
 impl Recipe {
 	/// Retrieves all recipes from the system.
-	pub async fn load_all_shared_recipes() -> Vec<Self> {
-		let query = "Select * From dbo.Recipe Where Shared = 1;";
+	pub async fn load_all_shared_recipes(user_id: Option<Uuid>) -> Vec<Self> {
+		let query = "Select * 
+      From dbo.Recipe 
+      Where Shared = 1
+        OR UserID = ISNULL(@p1, '00000000-0000-0000-0000-000000000000');";
 
-		Recipe::load_collection(query).await
+		Recipe::load_collection_with_params(query, &[&user_id]).await
 	}
 
 	fn load_from_combined_row(id: &Uuid, start_index: &mut usize, row: &Row) -> Self {

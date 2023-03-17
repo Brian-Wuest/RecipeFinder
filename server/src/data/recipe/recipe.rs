@@ -4,13 +4,13 @@ use tiberius::{Row, Uuid};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Recipe {
-	id: Uuid,
-	user_id: Uuid,
-	name: String,
-	ingredients: String,
-	instructions: String,
-	category_id: i64,
-	shared: bool,
+	pub id: Uuid,
+	pub user_id: Uuid,
+	pub name: String,
+	pub ingredients: String,
+	pub instructions: String,
+	pub category_id: i64,
+	pub shared: bool,
 }
 
 impl Recipe {
@@ -34,6 +34,12 @@ impl Recipe {
 			category_id: DataTools::get_i64_and_increment(start_index, row),
 			shared: DataTools::get_bool_and_increment(start_index, row),
 		}
+	}
+
+	pub async fn search(user_id: &Uuid, search_text: &Option<String>, category_id: &Option<i64>) -> Vec<Self> {
+		let query = "EXEC stpRecipeSearch @P1, @P2, @P3";
+
+		Recipe::load_collection_with_params(query, &[search_text, category_id, user_id]).await
 	}
 }
 

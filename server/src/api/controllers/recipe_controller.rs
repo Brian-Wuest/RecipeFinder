@@ -9,7 +9,10 @@ use tiberius::Uuid;
 use crate::{
 	api::{
 		guards::AuthorizationGuard,
-		models::request::recipe::{NewRecipeRequest, SearchRecipeRequest, UpdateRecipeRequest},
+		models::{
+			request::recipe::{NewRecipeRequest, SearchRecipeRequest, UpdateRecipeRequest},
+			response::SearchRecipeResponse,
+		},
 	},
 	data::recipe::Recipe,
 	models::authorization_roles::BASIC,
@@ -36,17 +39,16 @@ impl RecipeController {
 				),
 		);
 
-		cfg.service(
-			web::resource("/api/recipe/_search").route(
-				web::get()
-					.to(RecipeController::search)
-					.guard(AuthorizationGuard::new(BASIC.to_string())),
-			),
-		);
+		cfg.service(web::resource("/api/recipe/_search").route(web::get().to(RecipeController::search)));
 
 		// This is a different route due to the id parameter.
 		cfg.service(
 			web::resource("/api/recipe/{id}")
+				.route(
+					web::get()
+						.to(RecipeController::get)
+						.guard(AuthorizationGuard::new(BASIC.to_string())),
+				)
 				.route(
 					web::delete()
 						.to(RecipeController::delete)
@@ -71,12 +73,34 @@ impl RecipeController {
 		Ok(web::Json(result))
 	}
 
-	async fn search(_user: Option<Identity>, _req: HttpRequest, query_data: Query<SearchRecipeRequest>) -> Result<Option<Json<Recipe>>> {
+	async fn search(
+		user: Option<Identity>,
+		_req: HttpRequest,
+		query_data: Query<SearchRecipeRequest>,
+	) -> Result<Option<Json<Vec<SearchRecipeResponse>>>> {
 		log::info!("Doing recipe search!");
-		log::info!("Search Text: {:?}", query_data.search_text);
-		log::info!("Search Category: {:?}", query_data.category_id);
 
-		Ok(None)
+		let user_identity = parse_user_id_from_identity(&user);
+
+		if let Some(user_id) = user_identity {
+			let search_text = &query_data.search_text;
+			let category_id = &query_data.category_id;
+
+			let data_result = Recipe::search(&user_id, search_text, category_id).await;
+			let result = SearchRecipeResponse::convert_from_data_model_collection(data_result);
+
+			return Ok(Some(web::Json(result)));
+		}
+
+		Err(ErrorNotFound("User Not Found"))
+	}
+
+	async fn get(_user: Identity, _req: HttpRequest, _id: Path<Uuid>) -> Result<Option<Json<Recipe>>> {
+		/*
+		 TODO: Make sure the recipe is still shareable when we get to this point if the user on the recipe does not match the current user.
+		 This is necessary as the recipe may have been shareable when seen on the UI but is now no longer shareable.
+		*/
+		Err(ErrorNotFound("Record not found"))
 	}
 
 	async fn post(_user: Identity, _req: HttpRequest, _form: Json<NewRecipeRequest>) -> Result<Option<Json<Recipe>>> {
@@ -85,11 +109,16 @@ impl RecipeController {
 
 	async fn put(_user: Identity, _req: HttpRequest, id: Path<Uuid>, _form: Json<UpdateRecipeRequest>) -> Result<Option<Json<Recipe>>> {
 		let _inner_id = id.into_inner();
+		// TODO: Only allow this when the current user matches the recipe user
+		// Or when the current user is an admin.
+
 		Err(ErrorNotFound("Record not found"))
 	}
 
 	async fn delete(_user: Identity, _req: HttpRequest, id: Path<Uuid>) -> Result<String> {
 		let _inner_id = id.into_inner();
+		// TODO: Only allow this when the current user matches the recipe user
+		// Or when the current user is an admin.
 
 		Err(ErrorNotFound("Record not found"))
 	}

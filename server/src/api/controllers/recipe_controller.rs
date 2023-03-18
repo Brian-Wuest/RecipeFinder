@@ -16,7 +16,7 @@ use crate::{
 	},
 	data::recipe::Recipe,
 	models::authorization_roles::BASIC,
-	util::auth_services::parse_user_id_from_identity,
+	util::auth_services::{self, parse_user_id_from_identity, parse_user_id_from_identity_option},
 };
 
 pub struct RecipeController {}
@@ -44,11 +44,7 @@ impl RecipeController {
 		// This is a different route due to the id parameter.
 		cfg.service(
 			web::resource("/api/recipe/{id}")
-				.route(
-					web::get()
-						.to(RecipeController::get)
-						.guard(AuthorizationGuard::new(BASIC.to_string())),
-				)
+				.route(web::get().to(RecipeController::get))
 				.route(
 					web::delete()
 						.to(RecipeController::delete)
@@ -66,7 +62,7 @@ impl RecipeController {
 		// Keep this log as an example of how to do logging.
 		log::info!("Loading all recipes");
 
-		let user_identity = parse_user_id_from_identity(&user);
+		let user_identity = parse_user_id_from_identity_option(&user);
 
 		let result = Recipe::load_all_shared_recipes(user_identity).await;
 
@@ -80,27 +76,32 @@ impl RecipeController {
 	) -> Result<Option<Json<Vec<SearchRecipeResponse>>>> {
 		log::info!("Doing recipe search!");
 
-		let user_identity = parse_user_id_from_identity(&user);
+		let user_identity = parse_user_id_from_identity_option(&user);
+		let search_text = &query_data.search_text;
+		let category_id = &query_data.category_id;
 
-		if let Some(user_id) = user_identity {
-			let search_text = &query_data.search_text;
-			let category_id = &query_data.category_id;
+		let data_result = Recipe::search(&user_identity, search_text, category_id).await;
 
-			let data_result = Recipe::search(&user_id, search_text, category_id).await;
+		if data_result.len() > 0 {
 			let result = SearchRecipeResponse::convert_from_data_model_collection(data_result);
 
 			return Ok(Some(web::Json(result)));
 		}
 
-		Err(ErrorNotFound("User Not Found"))
+		Err(ErrorNotFound("No Recipes found"))
 	}
 
-	async fn get(_user: Identity, _req: HttpRequest, _id: Path<Uuid>) -> Result<Option<Json<Recipe>>> {
-		/*
-		 TODO: Make sure the recipe is still shareable when we get to this point if the user on the recipe does not match the current user.
-		 This is necessary as the recipe may have been shareable when seen on the UI but is now no longer shareable.
-		*/
-		Err(ErrorNotFound("Record not found"))
+	async fn get(user: Option<Identity>, _req: HttpRequest, id: Path<Uuid>) -> Result<Option<Json<Recipe>>> {
+		let user_identity = parse_user_id_from_identity_option(&user);
+		let recipe_id = id.into_inner();
+
+		let potential_data_result = Recipe::select_by_id(&user_identity, &recipe_id, &false).await;
+
+		if let Some(data_result) = potential_data_result {
+			return Ok(Some(web::Json(data_result)));
+		}
+
+		Err(ErrorNotFound("Recipe not found"))
 	}
 
 	async fn post(_user: Identity, _req: HttpRequest, _form: Json<NewRecipeRequest>) -> Result<Option<Json<Recipe>>> {
@@ -115,10 +116,27 @@ impl RecipeController {
 		Err(ErrorNotFound("Record not found"))
 	}
 
-	async fn delete(_user: Identity, _req: HttpRequest, id: Path<Uuid>) -> Result<String> {
-		let _inner_id = id.into_inner();
-		// TODO: Only allow this when the current user matches the recipe user
-		// Or when the current user is an admin.
+	// The permissions option here is to show how we can get information from the "extensions" part of the request.
+	// In this case, the permissions are added as a part of the authorization middle-ware
+	// This allows us to avoid another database hit just to re-learn what application permissions the user has.
+	async fn delete(user: Identity, permissions: web::ReqData<Vec<String>>, _req: HttpRequest, id: Path<Uuid>) -> Result<String> {
+		let user_identity = parse_user_id_from_identity(&user);
+		let recipe_id = id.into_inner();
+		let is_admin_user = auth_services::user_is_admin(&permissions);
+
+		let potential_data_result = Recipe::select_by_id(&user_identity, &recipe_id, &is_admin_user).await;
+
+		if let Some(_data_result) = potential_data_result {
+			// The recipe exists and the current user has permissions to it, go ahead and delete it.
+			match Recipe::delete_by_id(&recipe_id).await {
+				Ok(_) => {
+					return Ok("{ \"result\": \"Record deleted successfully!\" }".to_string());
+				}
+				Err(error) => {
+					log::warn!("Error deleting recipe with id: {}, error: {}", &recipe_id, error);
+				}
+			}
+		}
 
 		Err(ErrorNotFound("Record not found"))
 	}

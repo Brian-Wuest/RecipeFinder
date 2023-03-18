@@ -1,5 +1,5 @@
 use actix_identity::Identity;
-use actix_web::{dev::ServiceRequest, Error};
+use actix_web::{dev::ServiceRequest, Error, HttpMessage};
 use tiberius::Uuid;
 
 use crate::{
@@ -39,6 +39,7 @@ impl AuthorizationMiddlware {
 			}
 		}
 
+		req.extensions_mut().insert(return_value.clone());
 		Result::Ok(return_value)
 	}
 }

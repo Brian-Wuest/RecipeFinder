@@ -1,6 +1,6 @@
 use crate::data::common::{DataElement, DataTools};
 use serde::{Deserialize, Serialize};
-use tiberius::{Row, Uuid};
+use tiberius::{ExecuteResult, Result, Row, Uuid};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Recipe {
@@ -36,10 +36,22 @@ impl Recipe {
 		}
 	}
 
-	pub async fn search(user_id: &Uuid, search_text: &Option<String>, category_id: &Option<i64>) -> Vec<Self> {
+	pub async fn search(user_id: &Option<Uuid>, search_text: &Option<String>, category_id: &Option<i64>) -> Vec<Self> {
 		let query = "EXEC stpRecipeSearch @P1, @P2, @P3";
 
 		Recipe::load_collection_with_params(query, &[search_text, category_id, user_id]).await
+	}
+
+	pub async fn select_by_id(user_id: &Option<Uuid>, id: &Uuid, is_admin: &bool) -> Option<Recipe> {
+		let query = "EXEC stpRecipeSelect01 @P1, @P2, @P3";
+
+		Recipe::load_single_with_params(query, &[id, user_id, is_admin]).await
+	}
+
+	pub async fn delete_by_id(id: &Uuid) -> Result<ExecuteResult> {
+		let query = "DELETE FROM dbo.Recipe WHERE ID = @P1";
+
+		Recipe::delete_with_params(query, &[id]).await
 	}
 }
 

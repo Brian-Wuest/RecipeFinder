@@ -78,6 +78,11 @@ GET https://127.0.0.1:8443/api/recipe/_search?searchText=muf&category=4 HTTP/1.1
 content-type: application/json
 
 ###
+// Calls the recipe delete
+DELETE https://127.0.0.1:8443/api/recipe/2B1D8B1B-0F3A-409F-9DFE-004E14ACF1B7 HTTP/1.1
+content-type: application/json
+
+###
 // Gets the highest level of authorization for the current user.
 GET https://127.0.0.1:8443/api/authorization HTTP/1.1
 content-type: application/json

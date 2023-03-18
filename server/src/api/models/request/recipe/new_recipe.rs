@@ -3,10 +3,10 @@ use tiberius::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct NewRecipeRequest {
-	user_id: Uuid,
-	name: String,
-	ingredients: String,
-	instructions: String,
-	category_id: i64,
-	shared: bool,
+	pub user_id: Uuid,
+	pub name: String,
+	pub ingredients: String,
+	pub instructions: String,
+	pub category_id: i64,
+	pub shared: bool,
 }

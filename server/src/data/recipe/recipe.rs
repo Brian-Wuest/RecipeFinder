@@ -53,6 +53,19 @@ impl Recipe {
 
 		Recipe::delete_with_params(query, &[id]).await
 	}
+
+	pub async fn update_by_id(
+		id: &Uuid,
+		name: &String,
+		ingredients: &String,
+		instructions: &String,
+		category_id: &i64,
+		shared: &bool,
+	) -> Option<Recipe> {
+		let query = "EXEC stpRecipeUpdate @P1, @P2, @P3, @P4, @P5, @P6";
+
+		Recipe::load_single_with_params(query, &[id, name, ingredients, instructions, category_id, shared]).await
+	}
 }
 
 impl DataElement for Recipe {

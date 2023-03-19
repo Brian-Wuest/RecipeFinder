@@ -1,4 +1,7 @@
-use crate::data::common::{DataElement, DataTools};
+use crate::data::{
+	category::Category,
+	common::{DataElement, DataTools},
+};
 use serde::{Deserialize, Serialize};
 use tiberius::{ExecuteResult, Result, Row, Uuid};
 
@@ -11,6 +14,7 @@ pub struct Recipe {
 	pub instructions: String,
 	pub category_id: i64,
 	pub shared: bool,
+	pub category: Option<Category>,
 }
 
 impl Recipe {
@@ -25,14 +29,28 @@ impl Recipe {
 	}
 
 	fn load_from_combined_row(id: &Uuid, start_index: &mut usize, row: &Row) -> Self {
+		let mut category: Option<Category> = None;
+		let user_id = DataTools::get_uuid_and_increment(start_index, row);
+		let name = DataTools::get_string_and_increment(start_index, row);
+		let ingredients = DataTools::get_string_and_increment(start_index, row);
+		let instructions = DataTools::get_string_and_increment(start_index, row);
+		let category_id = DataTools::get_i64_and_increment(start_index, row);
+		let shared = DataTools::get_bool_and_increment(start_index, row);
+
+		// When there are more columns to retreive, there must be an included category object so populate that now.
+		if start_index < &mut (row.len()) {
+			category = Some(Category::load_from_combined_row(&category_id, start_index, row))
+		}
+
 		Recipe {
 			id: *id,
-			user_id: DataTools::get_uuid_and_increment(start_index, row),
-			name: DataTools::get_string_and_increment(start_index, row),
-			ingredients: DataTools::get_string_and_increment(start_index, row),
-			instructions: DataTools::get_string_and_increment(start_index, row),
-			category_id: DataTools::get_i64_and_increment(start_index, row),
-			shared: DataTools::get_bool_and_increment(start_index, row),
+			user_id,
+			name,
+			ingredients,
+			instructions,
+			category_id,
+			shared,
+			category,
 		}
 	}
 

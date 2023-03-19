@@ -5,6 +5,8 @@ pub struct UpdateRecipeRequest {
 	pub name: String,
 	pub ingredients: String,
 	pub instructions: String,
+
+	#[serde(rename = "categoryId")]
 	pub category_id: i64,
 	pub shared: bool,
 }

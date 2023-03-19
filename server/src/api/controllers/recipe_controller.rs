@@ -1,6 +1,6 @@
 use actix_identity::Identity;
 use actix_web::{
-	error::ErrorNotFound,
+	error::{ErrorBadRequest, ErrorNotFound},
 	web::{self, Json, Path, Query},
 	HttpRequest, Result,
 };
@@ -104,10 +104,41 @@ impl RecipeController {
 		Err(ErrorNotFound("Recipe not found"))
 	}
 
-	async fn post(_user: Identity, _req: HttpRequest, _form: Json<NewRecipeRequest>) -> Result<Option<Json<Recipe>>> {
+	async fn post(user: Identity, _req: HttpRequest, form: Json<NewRecipeRequest>) -> Result<Option<Json<Recipe>>> {
 		// Find a recipe by name and this user ID
 		// If a recipe matches then return an error as names have to be unique per user.
 		// Otherwise add the record for this user and return the created recipe.
+
+		let user_identity = parse_user_id_from_identity(&user);
+		let name = &form.name;
+		let potential_data_result = Recipe::select_by_name(&user_identity, name).await;
+
+		if let Some(_data_result) = potential_data_result {
+			// There is already a recipe with this name, return an error.
+			return Err(ErrorBadRequest("Recipe with that name already exists"));
+		}
+
+		if let Some(user_id) = user_identity {
+			match Recipe::insert(
+				&user_id,
+				&form.name,
+				&form.ingredients,
+				&form.instructions,
+				&form.category_id,
+				&form.shared,
+			)
+			.await
+			{
+				Some(updated_recipe) => {
+					return Ok(Some(web::Json(updated_recipe)));
+				}
+				None => {
+					log::warn!("Error inserting recipe with Name: {} for User ID: {}", &form.name, &user_id);
+					return Err(ErrorBadRequest("Recipe not inserted"));
+				}
+			}
+		}
+
 		Ok(None)
 	}
 
@@ -125,7 +156,17 @@ impl RecipeController {
 		let potential_data_result = Recipe::select_by_id(&user_identity, &recipe_id, &is_admin_user).await;
 
 		if let Some(_data_result) = potential_data_result {
-			// The recipe exists and the current user has permissions to it, go ahead and delete it.
+			// The recipe exists and the current user has permissions to it, go ahead and update it if there is not already a recipe with a matching name.
+			let name = &form.name;
+			let potential_data_name_result = Recipe::select_by_name(&user_identity, name).await;
+
+			if let Some(name_result) = potential_data_name_result {
+				// There is already a recipe with this name, if the ids don't match we cannot insert the record.
+				if name_result.id != recipe_id {
+					return Err(ErrorBadRequest("Recipe with that name already exists"));
+				}
+			}
+
 			match Recipe::update_by_id(
 				&recipe_id,
 				&form.name,

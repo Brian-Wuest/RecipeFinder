@@ -78,8 +78,34 @@ GET https://127.0.0.1:8443/api/recipe/_search?searchText=muf&category=4 HTTP/1.1
 content-type: application/json
 
 ###
+// Calls the recipe insert
+POST https://127.0.0.1:8443/api/recipe HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Test Recipe",
+  "ingredients": "1 cup of butter",
+  "instructions": "Scoop 1 cup of butter out of a container and use a spoon to eat it",
+  "categoryId": 4,
+  "shared": false
+}
+
+###
+// Calls the recipe update
+PUT https://127.0.0.1:8443/api/recipe/f978759b-aaf4-477f-a72e-b9a932363fde HTTP/1.1
+content-type: application/json
+
+{
+  "name": "Test Recipe",
+  "ingredients": "1 cup of butter",
+  "instructions": "Scoop 1 cup of butter out of a container and use a spoon to eat it",
+  "categoryId": 4,
+  "shared": false
+}
+
+###
 // Calls the recipe delete
-DELETE https://127.0.0.1:8443/api/recipe/2B1D8B1B-0F3A-409F-9DFE-004E14ACF1B7 HTTP/1.1
+DELETE https://127.0.0.1:8443/api/recipe/f978759b-aaf4-477f-a72e-b9a932363fde HTTP/1.1
 content-type: application/json
 
 ###

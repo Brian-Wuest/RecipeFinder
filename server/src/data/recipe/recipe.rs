@@ -66,6 +66,12 @@ impl Recipe {
 		Recipe::load_single_with_params(query, &[id, user_id, is_admin]).await
 	}
 
+	pub async fn select_by_name(user_id: &Option<Uuid>, name: &String) -> Option<Recipe> {
+		let query = "EXEC stpRecipeSelect02 @P1, @P2";
+
+		Recipe::load_single_with_params(query, &[user_id, name]).await
+	}
+
 	pub async fn delete_by_id(id: &Uuid) -> Result<ExecuteResult> {
 		let query = "DELETE FROM dbo.Recipe WHERE ID = @P1";
 
@@ -83,6 +89,19 @@ impl Recipe {
 		let query = "EXEC stpRecipeUpdate @P1, @P2, @P3, @P4, @P5, @P6";
 
 		Recipe::load_single_with_params(query, &[id, name, ingredients, instructions, category_id, shared]).await
+	}
+
+	pub async fn insert(
+		user_id: &Uuid,
+		name: &String,
+		ingredients: &String,
+		instructions: &String,
+		category_id: &i64,
+		shared: &bool,
+	) -> Option<Recipe> {
+		let query = "EXEC stpRecipeInsert @P1, @P2, @P3, @P4, @P5, @P6";
+
+		Recipe::load_single_with_params(query, &[user_id, name, ingredients, instructions, category_id, shared]).await
 	}
 }
 

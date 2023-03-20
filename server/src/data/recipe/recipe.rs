@@ -54,10 +54,15 @@ impl Recipe {
 		}
 	}
 
-	pub async fn search(user_id: &Option<Uuid>, search_text: &Option<String>, category_id: &Option<i64>) -> Vec<Self> {
-		let query = "EXEC stpRecipeSearch @P1, @P2, @P3";
+	pub async fn search(
+		user_id: &Option<Uuid>,
+		search_text: &Option<String>,
+		category_id: &Option<i64>,
+		only_mine: &Option<bool>,
+	) -> Vec<Self> {
+		let query = "EXEC stpRecipeSearch @P1, @P2, @P3, @P4";
 
-		Recipe::load_collection_with_params(query, &[search_text, category_id, user_id]).await
+		Recipe::load_collection_with_params(query, &[search_text, category_id, user_id, only_mine]).await
 	}
 
 	pub async fn select_by_id(user_id: &Option<Uuid>, id: &Uuid, is_admin: &bool) -> Option<Recipe> {

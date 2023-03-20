@@ -16,4 +16,8 @@ pub struct SearchRecipeRequest {
 	#[serde(rename = "category")]
 	#[serde(default, deserialize_with = "deserialize_option_ignore_error")]
 	pub category_id: Option<i64>,
+
+	#[serde(rename = "onlyMine")]
+	#[serde(default, deserialize_with = "deserialize_option_ignore_error")]
+	pub only_mine: Option<bool>,
 }

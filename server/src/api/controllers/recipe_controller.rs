@@ -79,8 +79,9 @@ impl RecipeController {
 		let user_identity = parse_user_id_from_identity_option(&user);
 		let search_text = &query_data.search_text;
 		let category_id = &query_data.category_id;
+		let only_mine = &query_data.only_mine;
 
-		let data_result = Recipe::search(&user_identity, search_text, category_id).await;
+		let data_result = Recipe::search(&user_identity, search_text, category_id, only_mine).await;
 
 		if data_result.len() > 0 {
 			let result = SearchRecipeResponse::convert_from_data_model_collection(data_result);

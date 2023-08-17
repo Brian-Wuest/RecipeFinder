@@ -69,7 +69,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       this.userName = value;
     });
 
-    var isDark = sessionStorage.getItem("isDark")?.toLowerCase() === 'true';
+    var isDark = localStorage.getItem("isDark")?.toLowerCase() === 'true';
 
     if (isDark) {
       this.isLightTheme = false;
@@ -110,7 +110,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
 
   changeLightDarkTheme(id: string, value: string) {
     this.changeLightDarkElement(id, value);
-    sessionStorage.setItem("isDark", (!this.isLightTheme).valueOf().toString());
+    localStorage.setItem("isDark", (!this.isLightTheme).valueOf().toString());
   }
 
   changeLightDarkLayout(id: string, value: string) {
